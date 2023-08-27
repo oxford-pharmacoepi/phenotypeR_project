@@ -39,7 +39,7 @@ library(tictoc)
 
 tic.clearlog()
 tic.clear()
-tic(msg = "PhenotypeR total time run: ")
+tic(msg = "phenotypeR total time run: ")
 
 
 ##### Connect to database using CDM COnnector ########
