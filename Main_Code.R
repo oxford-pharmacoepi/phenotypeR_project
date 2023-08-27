@@ -1,6 +1,5 @@
 rm(list=ls())
 
-
 # renv::snapshot()
 
 ## Install Needed Packages
@@ -20,6 +19,9 @@ rm(list=ls())
 # install.packages("IncidencePrevalence")
 # install.packages("tictoc")
 # pending install: SqlRender
+
+
+renv::activate()
 
 ### Open libraries
 library(CDMConnector)
@@ -77,10 +79,10 @@ toc(log = TRUE)
 
 tic(msg = "Settings and loading of Phoebe")
 
-cohort_json_dir <- "~/CohortDx2023/PhenotypeR_project/Cohorts/DMPM/"
+cohort_json_dir <- here("Cohorts/")
 cdm <- cdm_Gold_100k
 cohorts_name <- "pmdm_diagnostics_cohorts"
-concept_recommended <- read.csv("~/CohortDx2023/PhenotypeR_project/Phoebe/concept_recommended.csv")
+concept_recommended <- read.csv(here("Phoebe/concept_recommended.csv"))
 
 toc(log = TRUE)
 
@@ -159,8 +161,8 @@ for (n in  row_number(cohort_set_res) ) {
   cohort_set_res$markdown[n] <-  markdown
   
   ### Ideally reads the same JSON character line
-  json2 <- jsonlite::read_json(here(paste0("Cohorts/DMPM/", cohort, ".json")))
-  codes <- codesFromCohort(here(paste0("Cohorts/DMPM/", cohort, ".json")), cdm, withConceptDetails = F)
+  json2 <- jsonlite::read_json(paste0(cohort_json_dir, cohort, ".json"))
+  codes <- codesFromCohort(paste0(cohort_json_dir, cohort, ".json"), cdm, withConceptDetails = F)
   
   code_counts_2 <- tibble()
   
@@ -323,8 +325,8 @@ tic_log <- tic.log(format = TRUE)
 ############# Cleaning the environment ############
 
 
-rm(cdm, cdm_Gold,cdm_pmdm, concept_recommended, 
-   db, code_counts_2, codes, counts_table, 
+rm(cdm, cdm_Gold,cdm_pmdm,  
+   db, code_counts_2, codes,
    json2, cohortExpresion, original_codes_counts,
    recommended_codes, recommended_codes_counts)
 
