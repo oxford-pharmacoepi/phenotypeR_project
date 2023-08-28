@@ -22,6 +22,7 @@ rm(list=ls())
 
 
 renv::activate()
+renv::hydrate()
 
 ### Open libraries
 library(CDMConnector)
@@ -167,13 +168,13 @@ for (n in  row_number(cohort_set_res) ) {
   code_counts_2 <- tibble()
   
   for (code_list in codes) {
-
+    # code_list <- codes[[1]]
     codes_id <- code_list
     
     recommended_codes <- concept_recommended %>% 
       filter(concept_id_1 %in% codes_id ) %>% 
       filter(!concept_id_2 %in% codes_id) %>% 
-      distinct(concept_id_2)
+      distinct(concept_id_2, .keep_all = TRUE)
     
     recommended_codes_counts <- recommended_codes %>%
       left_join( counts_table, join_by(concept_id_2 == concept_id) )  %>%
@@ -183,7 +184,7 @@ for (n in  row_number(cohort_set_res) ) {
     
     
     original_codes_counts <- counts_table %>% filter(concept_id %in% codes_id) %>%
-    mutate(type="original_codes", cohort=cohort )
+    mutate(type="original_codes", cohort=cohort, relationship_id="original", concept_id_1=concept_id  )
     
     code_counts <- rbind(code_counts, recommended_codes_counts, original_codes_counts )
   }  
@@ -252,11 +253,14 @@ tic(msg = "Large Scale Char ")
                                    c(0, 0), 
                                    c(1, 30), c(31, 365),  c(366, Inf)),
                      # window =list(c(0, 0)),
-                     tablesToCharacterize = c("condition_occurrence", "drug_era", "visit_occurrence"), 
+                     tablesToCharacterize = c("condition_occurrence", "drug_era", "visit_occurrence",
+                                              "measurement", "procedure_occurrence",  "observation"), 
                      # Further options:
-                     # "condition_occurrence", "drug_exposure", 
-                     # "procedure_occurrence", "device_exposure", "measurement", 
-                     # "observation", "drug_era", "condition_era", "specimen"),
+                     #  "drug_exposure", 
+                     #  "device_exposure",  
+                     #   "condition_era", 
+                     # "specimen"),
+                     
                      overlap = TRUE,
                      minCellCount = 5
                    )
