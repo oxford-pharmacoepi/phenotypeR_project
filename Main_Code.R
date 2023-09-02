@@ -21,8 +21,8 @@ rm(list=ls())
 # pending install: SqlRender
 
 
-renv::activate()
-renv::hydrate()
+#renv::activate()
+#renv::hydrate()
 
 ### Open libraries
 library(CDMConnector)
@@ -230,10 +230,19 @@ tic(msg = "Patient_profiles summary")
 cdm_pmdm$results_dx <- cdm_pmdm$pmdm_diagnostics_cohorts 
 
 Patient_profiles <- cdm_pmdm$results_dx %>%
-  addDemographics(cdm_pmdm) %>% 
-  group_by(cohort_definition_id, sex) %>% 
-  summarise_at(vars(age, prior_observation, future_observation), list(Min = min, Mean = mean, Median = median,  Max = max, Sd = sd)) %>%
-  collect()
+   addDemographics(cdm_pmdm) %>% 
+  collect()   %>%
+  mutate( age_group= cut(age, c(seq(0, 110, 5 ), Inf), include.lowest=TRUE))
+
+
+
+Age_distribution <- Patient_profiles %>% group_by(cohort_definition_id, age_group, sex) %>% tally()
+
+
+Time_distribution <- Patient_profiles %>%
+   group_by(cohort_definition_id, sex) %>% 
+   summarise_at(vars(age, prior_observation, future_observation), list(Min = min, Mean = mean, Median = median,  Max = max, Sd = sd)) %>%
+   collect()
 
 
 toc(log = TRUE)
