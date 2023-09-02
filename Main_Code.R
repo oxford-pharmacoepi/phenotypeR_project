@@ -201,6 +201,8 @@ for (n in  row_number(cohort_set_res) ) {
    #                                    minCellCount = 0 )
 
 
+
+
   rm(counts_table)
   rm(concept_recommended)
    toc(log = TRUE)
@@ -324,6 +326,17 @@ toc(log = TRUE)
 #  Add source field and Standard fields subjects and records
 tic(msg = "Index Event Breakdown: not yet implemented")
 
+Index_events <- cdm_pmdm$pmdm_diagnostics_cohorts %>%
+                left_join(
+                cdm_pmdm$condition_occurrence,
+                by=join_by(subject_id==person_id, cohort_start_date==condition_start_date)) %>%
+                group_by(cohort_definition_id, condition_concept_id, condition_source_concept_id, condition_source_value) %>%
+                tally()  %>% 
+                left_join(cdm_pmdm$concept %>% select(concept_id , concept_name), by=join_by(condition_concept_id==concept_id))  %>% 
+                rename( standard_concept=concept_name)  %>% 
+                left_join(cdm_pmdm$concept %>% select(concept_id , concept_name), by=join_by(condition_source_concept_id==concept_id)) %>% 
+                rename( source_concept=concept_name)  %>%
+                collect() %>% filter( condition_concept_id %in% code_counts$concept_id_1)
 
 toc(log = TRUE)
 
