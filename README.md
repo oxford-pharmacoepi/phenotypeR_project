@@ -3,7 +3,7 @@ Project to start developing fast phenotyping tools
 
 > Prerequisite  files:
   - Please download the 'concept_recommended.csv' available at: https://forums.ohdsi.org/t/phoebe-2-0/17410 and stor it into the project folder named 'Phoebe'.
-  - Include your json files into the project folder named 'Cohorts'
+  - Include your json files into the project folder named 'Cohorts_json'
   - Install/load library(remotes)
   - Install the darwin-eu/CodelistGenerator - under developement thus, check which branch has the following function: codesFromCohort()
     -- # remotes::install_github("darwin-eu/CodelistGenerator@summarise_cohort_code_use", force=TRUE )

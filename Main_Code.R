@@ -77,7 +77,7 @@ cdm <- cdm_pharmetrics_100k
 #cohorts_name <- "pharheat_diagnostics_cohorts"
 #cdm <- cdm_pharmetrics
 
-cohort_json_dir <- here("Cohorts/")
+cohort_json_dir <- here("Cohorts_json/")
 concept_recommended <- read.csv(here("Phoebe/concept_recommended.csv"))
 
 toc(log = TRUE)
