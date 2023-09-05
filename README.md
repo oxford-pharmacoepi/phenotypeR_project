@@ -9,6 +9,8 @@ Project to start developing fast phenotyping tools
     -- # remotes::install_github("darwin-eu/CodelistGenerator@summarise_cohort_code_use", force=TRUE )
     -- # remotes::install_github("darwin-eu/CodelistGenerator@codes_from_cohort", force=TRUE )
   - Update DrugUtilization package to v0.3 (needs to update renv file)
+
+
 > Details of Main Code:
   - Line 84: define the cohort diagnostics name (i.e., replace 'name_diagnostics_cohorts' ) 
     cohorts_name <- "name_diagnostics_cohorts"
