@@ -8,7 +8,7 @@ Project to start developing fast phenotyping tools
   - Install the darwin-eu/CodelistGenerator - under developement thus, check which branch has the following function: codesFromCohort()
     -- # remotes::install_github("darwin-eu/CodelistGenerator@summarise_cohort_code_use", force=TRUE )
     -- # remotes::install_github("darwin-eu/CodelistGenerator@codes_from_cohort", force=TRUE )
-  - Update DrugUtilization package to v0.3 (needs to update renv file)
+  - Update DrugUtilization package to v0.3.2 (needs to update renv file)
 
 
 > Details of Main Code:
