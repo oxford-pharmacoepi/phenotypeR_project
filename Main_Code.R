@@ -21,8 +21,8 @@ rm(list=ls())
 # pending install: SqlRender
 
 
-#renv::activate()
-#renv::hydrate()
+# renv::activate()
+# renv::hydrate()
 
 ### Open libraries
 library(CDMConnector)
@@ -48,7 +48,8 @@ tic(msg = "phenotypeR total time run: ")
 
 tic(msg = "Connect to database")
 
-server_dbi <- Sys.getenv("DB_SERVER_DBI_Pharmetrics") 
+# server_dbi <- Sys.getenv("DB_SERVER_DBI_Pharmetrics") 
+server_dbi <- Sys.getenv("DB_SERVER_DBI_CPRDgold") 
 user <- Sys.getenv("DB_USER") 
 port <- Sys.getenv("DB_PORT") 
 host <- Sys.getenv("DB_HOST")
@@ -81,7 +82,7 @@ toc(log = TRUE)
 tic(msg = "Settings and loading of Phoebe")
 
 cohort_json_dir <- here("Cohorts/")
-cdm <- cdm_Gold_100k
+cdm <- cdm_Gold
 cohorts_name <- "pmdm_diagnostics_cohorts"
 concept_recommended <- read.csv(here("Phoebe/concept_recommended.csv"))
 
@@ -260,6 +261,7 @@ tic(msg = "Large Scale Char ")
 
  large_scale_char <- summariseLargeScaleCharacteristics(
                      cohort=cdm_pmdm$pmdm_diagnostics_cohorts,
+
                      window = list(c(-Inf, -366), c(-365, -31), c(-30, -1), 
                                    c(0, 0), 
                                    c(1, 30), c(31, 365),  c(366, Inf)),
@@ -324,7 +326,8 @@ toc(log = TRUE)
 ########  7 - Index Event Breakdown ##############
 # Only missing thing !
 #  Add source field and Standard fields subjects and records
-tic(msg = "Index Event Breakdown: not yet implemented")
+# TEST: ONLY FOR CONDITIONS
+tic(msg = "Index Event Breakdown: only for conditions now")
 
 Index_events <- cdm_pmdm$pmdm_diagnostics_cohorts %>%
                 left_join(
@@ -356,11 +359,11 @@ rm(cdm, cdm_Gold,cdm_pmdm,
    json2, cohortExpresion, original_codes_counts,
    recommended_codes, recommended_codes_counts)
 
- rm(list = ls.str(mode = 'numeric'))
- rm(list = ls.str(mode = 'character'))
+ # rm(list = ls.str(mode = 'numeric'))
+ # rm(list = ls.str(mode = 'character'))
 
 
-
-
+save.image(file = here(paste0("Results/",cohorts_name, format(Sys.time(), "_%Y_%M_%d") , ".RData")))
+# load("my_work_space.RData")
 
 
