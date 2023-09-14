@@ -320,7 +320,7 @@ inc <- estimateIncidence(
 toc(log = TRUE)
 
 
-tic()
+tic(msg = "Prevalence by year, age, sex")
 
 prev <- estimatePeriodPrevalence(
   cdm = cdm,
