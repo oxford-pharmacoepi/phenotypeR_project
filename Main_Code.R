@@ -80,10 +80,10 @@ toc(log = TRUE)
 
 
 tic(msg = "Settings and loading of Phoebe")
-
+# ~/CohortDx2023/phenotypeR_project/Results
 cohort_json_dir <- here("Cohorts/")
 cdm <- cdm_Gold
-cohorts_name <- "pmdm_diagnostics_cohorts"
+cohorts_name <- "hpv_diagnostics_cohorts"
 concept_recommended <- read.csv(here("Phoebe/concept_recommended.csv"))
 
 toc(log = TRUE)
@@ -116,14 +116,14 @@ toc(log = TRUE)
 tic(msg = "Calculate Overlap")
 
 # Summarize the number of IDs in each group
-summary_by_group <- cdm$pmdm_diagnostics_cohorts %>%
+summary_by_group <- cdm[[cohorts_name]] %>%
                     group_by(cohort_definition_id) %>%
                     summarize(ids_in_group = n()) %>% 
                     collect()
 
 # Join to get the IDs that intersect between groups
-summary_intersections <- cdm$pmdm_diagnostics_cohorts %>%
-  inner_join(cdm$pmdm_diagnostics_cohorts, by = "subject_id") %>%
+summary_intersections <- cdm[[cohorts_name]] %>%
+  inner_join(cdm[[cohorts_name]], by = "subject_id") %>%
   filter(cohort_definition_id.x != cohort_definition_id.y) %>%
   select(subject_id, cohort_definition_id_x = cohort_definition_id.x, cohort_definition_id_y = cohort_definition_id.y) %>%
   distinct()  %>%
@@ -214,13 +214,13 @@ for (n in  row_number(cohort_set_res) ) {
    
 tic(msg = "Cohort counts, attrition, subset cdm")
    
-# cdm$pmdm_diagnostics_cohorts %>% glimpse()
-cohort_count <- cohort_count(cdm$pmdm_diagnostics_cohorts)
-cohort_attrition <- cohort_attrition(cdm$pmdm_diagnostics_cohorts)
-cohort_set_cdm <- cohort_set(cdm$pmdm_diagnostics_cohorts)
+# cdm[[cohorts_name]] %>% glimpse()
+cohort_count <- cohort_count(cdm[[cohorts_name]])
+cohort_attrition <- cohort_attrition(cdm[[cohorts_name]])
+cohort_set_cdm <- cohort_set(cdm[[cohorts_name]])
 
-cdm_pmdm <- cdm %>% 
-  cdm_subset_cohort(cohort_table = "pmdm_diagnostics_cohorts")
+#cdm <- cdm %>% 
+#  cdm_subset_cohort(cohort_table = cohorts_name)
 
 toc(log = TRUE)
 
@@ -230,10 +230,10 @@ toc(log = TRUE)
 # Need to add better characterisation of demographics (a sort of table 1)
 
 tic(msg = "Patient_profiles summary")
-cdm_pmdm$results_dx <- cdm_pmdm$pmdm_diagnostics_cohorts 
+cdm$results_dx <- cdm[[cohorts_name]]
 
-Patient_profiles <- cdm_pmdm$results_dx %>%
-   addDemographics(cdm_pmdm) %>% 
+Patient_profiles <- cdm$results_dx %>%
+   addDemographics(cdm) %>% 
   collect()   %>%
   mutate( age_group= cut(age, c(seq(0, 110, 5 ), Inf), include.lowest=TRUE))
 
@@ -247,7 +247,7 @@ Time_distribution <- Patient_profiles %>%
    summarise_at(vars(age, prior_observation, future_observation), list(Min = min, Mean = mean, Median = median,  Max = max, Sd = sd)) %>%
    collect()
 
-
+rm(Patient_profiles)
 toc(log = TRUE)
 
 
@@ -260,7 +260,7 @@ toc(log = TRUE)
 tic(msg = "Large Scale Char ")
 
  large_scale_char <- summariseLargeScaleCharacteristics(
-                     cohort=cdm_pmdm$pmdm_diagnostics_cohorts,
+                     cohort=cdm[[cohorts_name]],
 
                      window = list(c(-Inf, -366), c(-365, -31), c(-30, -1), 
                                    c(0, 0), 
@@ -308,7 +308,7 @@ cdm <- generateDenominatorCohortSet(
 inc <- estimateIncidence(
   cdm = cdm,
   denominatorTable = "denominator",
-  outcomeTable = "pmdm_diagnostics_cohorts",
+  outcomeTable = cohorts_name,
   interval = "years",
   repeatedEvents = FALSE,
   outcomeWashout = Inf,
@@ -320,6 +320,23 @@ inc <- estimateIncidence(
 toc(log = TRUE)
 
 
+tic()
+
+prev <- estimatePeriodPrevalence(
+  cdm = cdm,
+  denominatorTable = "denominator",
+  outcomeTable = cohorts_name,
+  outcomeLookbackDays = NULL,
+  interval = "years",
+  completeDatabaseIntervals = TRUE,
+  fullContribution = FALSE,
+  minCellCount = 5,
+  temporary = TRUE,
+  returnParticipants = FALSE
+)
+
+
+toc()
 
 
 
@@ -329,15 +346,15 @@ toc(log = TRUE)
 # TEST: ONLY FOR CONDITIONS
 tic(msg = "Index Event Breakdown: only for conditions now")
 
-Index_events <- cdm_pmdm$pmdm_diagnostics_cohorts %>%
+Index_events <- cdm[[cohorts_name]] %>%
                 left_join(
-                cdm_pmdm$condition_occurrence,
+                cdm$condition_occurrence,
                 by=join_by(subject_id==person_id, cohort_start_date==condition_start_date)) %>%
                 group_by(cohort_definition_id, condition_concept_id, condition_source_concept_id, condition_source_value) %>%
                 tally()  %>% 
-                left_join(cdm_pmdm$concept %>% select(concept_id , concept_name), by=join_by(condition_concept_id==concept_id))  %>% 
+                left_join(cdm$concept %>% select(concept_id , concept_name), by=join_by(condition_concept_id==concept_id))  %>% 
                 rename( standard_concept=concept_name)  %>% 
-                left_join(cdm_pmdm$concept %>% select(concept_id , concept_name), by=join_by(condition_source_concept_id==concept_id)) %>% 
+                left_join(cdm$concept %>% select(concept_id , concept_name), by=join_by(condition_source_concept_id==concept_id)) %>% 
                 rename( source_concept=concept_name)  %>%
                 collect() %>% filter( condition_concept_id %in% code_counts$concept_id_1)
 
@@ -354,7 +371,7 @@ tic_log <- tic.log(format = TRUE)
 ############# Cleaning the environment ############
 
 
-rm(cdm, cdm_Gold,cdm_pmdm,  
+rm(cdm, cdm_Gold,cdm,  
    db, code_counts_2, codes,
    json2, cohortExpresion, original_codes_counts,
    recommended_codes, recommended_codes_counts)
