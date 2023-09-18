@@ -42,6 +42,25 @@ library(Eunomia)
 library(CohortDiagnostics)
 
 
+# connectionDetails <- Eunomia::getEunomiaConnectionDetails()
+# 
+# cdmDatabaseSchema <- "main"
+# cohortDatabaseSchema <- "main"
+# 
+# 
+# CohortDiagnostics::createConceptCountsTable(connectionDetails = connectionDetails,
+#                                             connection = NULL,
+#                                             cdmDatabaseSchema = cdmDatabaseSchema,
+#                                             tempEmulationSchema = NULL,
+#                                             conceptCountsDatabaseSchema = cohortDatabaseSchema,
+#                                             conceptCountsTable = "concept_counts",
+#                                             conceptCountsTableIsTemp = FALSE,
+#                                             removeCurrentTable = TRUE)
+# 
+# connection <- DatabaseConnector::connect(connectionDetails)
+# concept_counts <- querySql(connection, "SELECT * FROM main.concept_counts")
+
+
 
 tic.clearlog()
 tic.clear()
@@ -74,9 +93,6 @@ cdm_Eunomia <- cdm_from_con(con = db,
                          cdm_schema = "main",
                          write_schema = "main")
 
-cdm_Eunomia <- cdm_from_con(con = db,
-                            cdm_schema = "main",
-                            write_schema = "main")
 
 #getVocabVersion(cdm=cdm_Gold)
   
@@ -89,10 +105,10 @@ toc(log = TRUE)
 
 tic(msg = "Settings and loading of Phoebe")
 # ~/CohortDx2023/phenotypeR_project/Results
-cohort_json_dir <- here(system.file("cohorts", package = "CohortDiagnostics"))
+cohort_json_dir <- here::here(system.file("cohorts", package = "CohortDiagnostics"))
 cdm <- cdm_Eunomia
 cohorts_name <- "gi_bleed"
-concept_recommended <- read.csv(here("Phoebe/concept_recommended.csv"))
+concept_recommended <- read.csv(here::here("Phoebe/concept_recommended.csv"))
 
 toc(log = TRUE)
 
@@ -120,6 +136,8 @@ toc(log = TRUE)
 ################ 9 - Cohort Overlap (Subjects) ###############
 # Percentages and counts: Counts only for now, percentages easy
 # May want to add names to cohorts
+
+cohortOverlap(cdm = cdm, cohorts_name = cohorts_name)
 
 tic(msg = "Calculate Overlap")
 
@@ -163,28 +181,30 @@ cdmDatabaseSchema <- "main"
 # schema where a results table will be created
 cohortDatabaseSchema <- "main"
 
-CohortDiagnostics::createConceptCountsTable(connectionDetails = db,
-                                            connection = NULL,
-                                            cdmDatabaseSchema = cdmDatabaseSchema,
-                                            tempEmulationSchema = NULL,
-                                            conceptCountsDatabaseSchema = cohortDatabaseSchema,
-                                            conceptCountsTable = "concept_counts",
-                                            conceptCountsTableIsTemp = FALSE,
-                                            removeCurrentTable = TRUE)
+# CohortDiagnostics::createConceptCountsTable(connectionDetails = db,
+#                                             connection = NULL,
+#                                             cdmDatabaseSchema = cdmDatabaseSchema,
+#                                             tempEmulationSchema = NULL,
+#                                             conceptCountsDatabaseSchema = cohortDatabaseSchema,
+#                                             conceptCountsTable = "concept_counts",
+#                                             conceptCountsTableIsTemp = FALSE,
+#                                             removeCurrentTable = TRUE)
+# 
+# sql <- SqlRender::loadRenderTranslateSql("CreateConceptCountTable.sql", 
+#                                          packageName = "CohortDiagnostics", dbms = "sqlite", 
+#                                          cdm_database_schema = cdmDatabaseSchema, 
+#                                          work_database_schema = "main", concept_counts_table = "concept_counts_db", 
+#                                          table_is_temp = FALSE, remove_current_table = TRUE)
 
-sql <- SqlRender::loadRenderTranslateSql("CreateConceptCountTable.sql", 
-                                         packageName = "CohortDiagnostics", dbms = "sqlite", 
-                                         cdm_database_schema = cdmDatabaseSchema, 
-                                         work_database_schema = "main", concept_counts_table = "concept_counts_db", 
-                                         table_is_temp = FALSE, remove_current_table = TRUE)
-
-counts_table <- dbSendQuery(db, sql[1])
+# counts_table <- dbSendQuery(db, sql[1])
 
 ##
 
+concept_counts <- phenotypeProject::cohortConceptCount(cdm)
+
 tic(msg = "Orphan codes + markdown readable text for only first cohort")
 
-cohort_set_res = cohort_set
+cohort_set_res <- cohort_set
 cohort_set_res$markdown <- ""
 counts_table <- concept_counts
 # counts_table <- dbFetch(counts_table)
@@ -204,7 +224,6 @@ code_counts <- tibble()
 
 for (n in  row_number(cohort_set_res) ) {
 
-  
   cohort <- cohort_set_res$cohort_name[n]  
   json <- paste0(cohort_set_res$json[n]  )
   cohortExpresion <- CirceR::cohortExpressionFromJson(json)
@@ -212,8 +231,10 @@ for (n in  row_number(cohort_set_res) ) {
   cohort_set_res$markdown[n] <-  markdown
   
   ### Ideally reads the same JSON character line
-  json2 <- jsonlite::read_json(paste0(cohort_json_dir, cohort, ".json"))
-  codes <- codesFromCohort(paste0(cohort_json_dir, cohort, ".json"), cdm, withConceptDetails = F)
+  json2 <- jsonlite::read_json(file.path(cohort_json_dir, paste0(cohort, ".json")))
+  codes <- CodelistGenerator::codesFromCohort(file.path(cohort_json_dir, paste0(cohort, ".json")), 
+                                                        cdm, 
+                                                        withConceptDetails = FALSE)
   
   code_counts_2 <- tibble()
   
@@ -282,14 +303,11 @@ tic(msg = "Patient_profiles summary")
 cdm$results_dx <- cdm[[cohorts_name]]
 
 Patient_profiles <- cdm$results_dx %>%
-   addDemographics(cdm) %>% 
+  PatientProfiles::addDemographics(cdm) %>% 
   collect()   %>%
-  mutate( age_group= cut(age, c(seq(0, 110, 5 ), Inf), include.lowest=TRUE))
-
-
+  mutate(age_group= cut(age, c(seq(0, 110, 5 ), Inf), include.lowest=TRUE))
 
 Age_distribution <- Patient_profiles %>% group_by(cohort_definition_id, age_group, sex) %>% tally()
-
 
 Time_distribution <- Patient_profiles %>%
    group_by(cohort_definition_id, sex) %>% 
@@ -298,6 +316,7 @@ Time_distribution <- Patient_profiles %>%
 
 rm(Patient_profiles)
 toc(log = TRUE)
+return(Time_distribution)
 
 
 ######## # 10-13 - Cohort Characterisation : Large scale + temporal + differneces    ################
@@ -308,7 +327,7 @@ toc(log = TRUE)
 
 tic(msg = "Large Scale Char ")
 
- large_scale_char <- summariseLargeScaleCharacteristics(
+ large_scale_char <- PatientProfiles::summariseLargeScaleCharacteristics(
                      cohort=cdm[[cohorts_name]],
 
                      window = list(c(-Inf, -366), c(-365, -31), c(-30, -1), 

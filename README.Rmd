@@ -1,0 +1,119 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# phenotypeProject
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+Project to start developing fast phenotyping tools
+
+## Installation
+
+You can install the development version of phenotypeProject from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("oxford-pharmacoepi/phenotypeProject")
+```
+
+#### Example
+
+Create a connection with CDMConnector
+
+```{r}
+db <- DBI::dbConnect(duckdb::duckdb(), CDMConnector::eunomia_dir())
+cdm <- CDMConnector::cdm_from_con(con = db,
+                                  cdm_schema = "main",
+                                  write_schema = "main")
+```
+
+#### Define variables
+
+```{r}
+cohort_json_dir <- here::here(system.file("cohorts", package = "CohortDiagnostics"))
+cohorts_name <- "gi_bleed"
+concept_recommended <- read.csv(here::here("Phoebe/concept_recommended.csv"))
+
+```
+
+##### Get cohorts and generate them now from json, but we can do with CapR other sources 
+
+```{r}
+cohort_set <- CDMConnector::read_cohort_set(cohort_json_dir)
+
+cdm <- CDMConnector::generateCohortSet(cdm, 
+                                       cohort_set,
+                                       name = cohorts_name,
+                                       computeAttrition = TRUE,
+                                       overwrite = TRUE)
+```
+
+#### Concept counts table
+
+```{r}
+concept_counts <- phenotypeProject::cohortConceptCount(cdm)
+concept_counts
+
+```
+
+
+#### Cohort Overlap (Subjects Percentages and counts: Counts only for now, percentages easy May want to add names to cohorts)
+
+```{r}
+phenotypeProject::cohortOverlap(cdm = cdm, cohorts_name = cohorts_name)
+```
+
+#### Time distributions observation time (days) after index, observation time (days) prior to index, time (days) between cohort start and end Need to add better characterisation of demographics (a sort of table 1)
+
+```{r}
+phenotypeProject::timeDistributions(cdm = cdm, cohorts_name = cohorts_name)
+```
+#### Cohort Characterisation : Large scale + temporal + differneces. Missing differences between them that can be done in shiny step - Also demographics that can be done in previous steps. 8 - Visit Context  ###########
+
+Low priority: tipe of visits Before, during, simultaneous, after
+Could potentially be extracted from large scale ?
+
+```{r, eval=FALSE}
+phenotypeProject::largeScaleCharacterization(cdm = cdm, cohorts_name = cohorts_name)
+```
+
+#### Incidence
+
+```{r, eval=FALSE}
+cdm <- IncidencePrevalence::generateDenominatorCohortSet(
+  cdm = cdm, 
+  name = "denominator", 
+  cohortDateRange = NULL,
+  ageGroup = list(c(0,17), c(18,64),
+                  c(65,199)),
+  sex = c("Male", "Female", "Both"),
+  daysPriorHistory = 180
+)
+
+inc <- IncidencePrevalence::estimateIncidence(
+  cdm = cdm,
+  denominatorTable = "denominator",
+  outcomeTable = cohorts_name,
+  interval = "years",
+  repeatedEvents = FALSE,
+  outcomeWashout = Inf,
+  completeDatabaseIntervals = FALSE,
+  minCellCount = 0 )
+```
+
+
+
+
