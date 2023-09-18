@@ -35,6 +35,11 @@ library(here)
 library(DrugUtilisation)
 library(IncidencePrevalence)
 library(tictoc)
+library(CodelistGenerator)
+library(SqlRender)
+library(duckdb)
+library(Eunomia)
+library(CohortDiagnostics)
 
 
 
@@ -49,26 +54,29 @@ tic(msg = "phenotypeR total time run: ")
 tic(msg = "Connect to database")
 
 # server_dbi <- Sys.getenv("DB_SERVER_DBI_Pharmetrics") 
-server_dbi <- Sys.getenv("DB_SERVER_DBI_CPRDgold") 
-user <- Sys.getenv("DB_USER") 
-port <- Sys.getenv("DB_PORT") 
-host <- Sys.getenv("DB_HOST")
-
-db <- dbConnect(RPostgres::Postgres(), 
-                dbname = server_dbi, 
-                port = port, 
-                host = host, 
-                user = user, 
-                password = Sys.getenv("DB_PASSWORD") ) 
+# server_dbi <- Sys.getenv("DB_SERVER_DBI_CPRDgold") 
+# user <- Sys.getenv("DB_USER") 
+# port <- Sys.getenv("DB_PORT") 
+# host <- Sys.getenv("DB_HOST")
 
 
-cdm_Gold <- cdm_from_con(con = db,
-                         cdm_schema = "public",
-                         write_schema = "results")
+db <- DBI::dbConnect(duckdb::duckdb(), eunomia_dir())
 
- cdm_Gold_100k <- cdm_from_con(con = db,
-                               cdm_schema = "public_100k",
-                               write_schema = "results")
+# db <- dbConnect(RPostgres::Postgres(), 
+#                 dbname = server_dbi, 
+#                 port = port, 
+#                 host = host, 
+#                 user = user, 
+#                 password = Sys.getenv("DB_PASSWORD") ) 
+
+
+cdm_Eunomia <- cdm_from_con(con = db,
+                         cdm_schema = "main",
+                         write_schema = "main")
+
+cdm_Eunomia <- cdm_from_con(con = db,
+                            cdm_schema = "main",
+                            write_schema = "main")
 
 #getVocabVersion(cdm=cdm_Gold)
   
@@ -81,9 +89,9 @@ toc(log = TRUE)
 
 tic(msg = "Settings and loading of Phoebe")
 # ~/CohortDx2023/phenotypeR_project/Results
-cohort_json_dir <- here("Cohorts/")
-cdm <- cdm_Gold
-cohorts_name <- "hpv_diagnostics_cohorts"
+cohort_json_dir <- here(system.file("cohorts", package = "CohortDiagnostics"))
+cdm <- cdm_Eunomia
+cohorts_name <- "gi_bleed"
 concept_recommended <- read.csv(here("Phoebe/concept_recommended.csv"))
 
 toc(log = TRUE)
@@ -143,12 +151,53 @@ toc(log = TRUE)
 # TO DO: Need to improve metadata in names of concept sets and names of cohorts
 # TO DO: Need to add  Source field and Standard fields
 
+## GENERATE TABLE WITH darwin CD createConcept function
+
+library(CohortDiagnostics)
+library(DatabaseConnector)
+
+# Fill connection details
+connectionDetails <- Eunomia::getEunomiaConnectionDetails()
+# schema that contains the OMOP CDM with patient-level data
+cdmDatabaseSchema <- "main"
+# schema where a results table will be created
+cohortDatabaseSchema <- "main"
+
+CohortDiagnostics::createConceptCountsTable(connectionDetails = db,
+                                            connection = NULL,
+                                            cdmDatabaseSchema = cdmDatabaseSchema,
+                                            tempEmulationSchema = NULL,
+                                            conceptCountsDatabaseSchema = cohortDatabaseSchema,
+                                            conceptCountsTable = "concept_counts",
+                                            conceptCountsTableIsTemp = FALSE,
+                                            removeCurrentTable = TRUE)
+
+sql <- SqlRender::loadRenderTranslateSql("CreateConceptCountTable.sql", 
+                                         packageName = "CohortDiagnostics", dbms = "sqlite", 
+                                         cdm_database_schema = cdmDatabaseSchema, 
+                                         work_database_schema = "main", concept_counts_table = "concept_counts_db", 
+                                         table_is_temp = FALSE, remove_current_table = TRUE)
+
+counts_table <- dbSendQuery(db, sql[1])
+
+##
+
 tic(msg = "Orphan codes + markdown readable text for only first cohort")
 
 cohort_set_res = cohort_set
 cohort_set_res$markdown <- ""
-counts_table <- dbSendQuery(db, "SELECT * FROM results.cohort_diagnostics_concept_counts_permanent_table")
-counts_table <- dbFetch(counts_table)
+counts_table <- concept_counts
+# counts_table <- dbFetch(counts_table)
+
+
+
+
+
+
+  
+  
+  
+  
 
 
 code_counts <- tibble()
