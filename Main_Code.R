@@ -49,7 +49,7 @@ tic(msg = "phenotypeR total time run: ")
 tic(msg = "Connect to database")
 
 # server_dbi <- Sys.getenv("DB_SERVER_DBI_Pharmetrics") 
-server_dbi <- Sys.getenv("DB_SERVER_DBI_CPRDgold") 
+# server_dbi <- Sys.getenv("DB_SERVER_DBI_CPRDgold") 
 user <- Sys.getenv("DB_USER") 
 port <- Sys.getenv("DB_PORT") 
 host <- Sys.getenv("DB_HOST")
@@ -82,8 +82,8 @@ toc(log = TRUE)
 tic(msg = "Settings and loading of Phoebe")
 # ~/CohortDx2023/phenotypeR_project/Results
 cohort_json_dir <- here("Cohorts/")
-cdm <- cdm_Gold
-cohorts_name <- "hpv_diagnostics_cohorts"
+cdm <- cdm_Gold_100k
+cohorts_name <- "rectal_prolapse_phenotyper_pharmetrics_100k"
 concept_recommended <- read.csv(here("Phoebe/concept_recommended.csv"))
 
 toc(log = TRUE)
@@ -371,7 +371,7 @@ tic_log <- tic.log(format = TRUE)
 ############# Cleaning the environment ############
 
 
-rm(cdm, cdm_Gold,cdm,  
+rm(cdm, cdm_Gold,  cdm_Gold_100k,
    db, code_counts_2, codes,
    json2, cohortExpresion, original_codes_counts,
    recommended_codes, recommended_codes_counts)
@@ -380,7 +380,12 @@ rm(cdm, cdm_Gold,cdm,
  # rm(list = ls.str(mode = 'character'))
 
 
-save.image(file = here(paste0("Results/",cohorts_name, format(Sys.time(), "_%Y_%M_%d") , ".RData")))
+#save.image(file = here(paste0("Results/",cohorts_name, format(Sys.time(), "_%Y_%M_%d") , ".RData")))
+
+####### Making it work as a background job 
+save(list=ls(), 
+     file = here(paste0("Results/",cohorts_name, format(Sys.time(), "_%Y_%M_%d") , ".RData")))
+
 # load("my_work_space.RData")
 
 
