@@ -49,7 +49,7 @@ tic(msg = "phenotypeR total time run: ")
 tic(msg = "Connect to database")
 
 # server_dbi <- Sys.getenv("DB_SERVER_DBI_Pharmetrics") 
-# server_dbi <- Sys.getenv("DB_SERVER_DBI_CPRDgold") 
+ server_dbi <- Sys.getenv("DB_SERVER_DBI_CPRDgold") 
 user <- Sys.getenv("DB_USER") 
 port <- Sys.getenv("DB_PORT") 
 host <- Sys.getenv("DB_HOST")
@@ -82,8 +82,8 @@ toc(log = TRUE)
 tic(msg = "Settings and loading of Phoebe")
 # ~/CohortDx2023/phenotypeR_project/Results
 cohort_json_dir <- here("Cohorts/")
-cdm <- cdm_Gold_100k
-cohorts_name <- "rectal_prolapse_phenotyper_pharmetrics_100k"
+cdm <- cdm_Gold
+cohorts_name <- "hpv_vaccine_gold"
 concept_recommended <- read.csv(here("Phoebe/concept_recommended.csv"))
 
 toc(log = TRUE)
@@ -149,6 +149,13 @@ cohort_set_res = cohort_set
 cohort_set_res$markdown <- ""
 counts_table <- dbSendQuery(db, "SELECT * FROM results.cohort_diagnostics_concept_counts_permanent_table")
 counts_table <- dbFetch(counts_table)
+
+### Working with Achilles tables
+#achilles_analyses <- dbSendQuery(db, "SELECT * FROM results.achilles_analysis") 
+#achilles_analyses <- dbFetch(achilles_analyses) 
+#achilles_analyses_2 <-  achilles_analyses %>% filter(grepl('0$|1$', format(round(analysis_id, 0)), perl = TRUE))
+
+#achilles_table <- dbSendQuery(db, "SELECT * FROM results.achilles_results") 
 
 
 code_counts <- tibble()
@@ -384,7 +391,7 @@ rm(cdm, cdm_Gold,  cdm_Gold_100k,
 
 ####### Making it work as a background job 
 save(list=ls(), 
-     file = here(paste0("Results/",cohorts_name, format(Sys.time(), "_%Y_%M_%d") , ".RData")))
+     file = here(paste0("Results/",cohorts_name, format(Sys.time(), "_%Y_%m_%d") , ".RData")))
 
 # load("my_work_space.RData")
 

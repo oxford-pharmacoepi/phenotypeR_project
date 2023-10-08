@@ -40,8 +40,9 @@ db <- dbConnect(RPostgres::Postgres(),
 
 
 cdm <- cdm_from_con(con = db,
-                         cdm_schema = "public_100k",
-                         write_schema = "results")
+                         cdm_schema = "public",
+                         write_schema = "results",
+                    cohort_tables = "hpv_vaccines_cohorts")
 
 
 
@@ -74,6 +75,8 @@ cdm <-   generateCohortSet(cdm,
 toc(log = TRUE)
 
 
+tic(msg = "Generate Sample and Matched sample")
+
 
 cdm$sample <- cdm[[cohorts_name]]  %>% 
               slice_sample( n=1000, by =cohort_definition_id ) 
@@ -84,7 +87,7 @@ cdm$sample2 <- cdm$sample %>%
 
 
 
-cdm$person_obs <- cdm$person %>% left_join(cdm$observation_period ) %>% collect()
+cdm$person_obs <- cdm$person %>% slice_sample( n=1000, by =year_of_birth )  %>% left_join(cdm$observation_period )  %>% collect()
 
 matched_cohort <- cdm$sample2 %>% left_join(cdm$person_obs , by=join_by(year_of_birth==year_of_birth, 
                                                gender_concept_id==gender_concept_id),
@@ -105,8 +108,11 @@ cohort_set_ref <- dplyr::tbl(con, Id(schema = "results",table="matched_cohort_te
 
 cdm[["matched_cohort"]] <- cohort_ref
 cdm$matched_cohort <- new_generated_cohort_set(cdm[["matched_cohort"]],cohort_set_ref = cohort_set_ref, overwrite = TRUE)
-                                     
-tic()
+  
+
+toc(log = TRUE)
+                                   
+tic("LArgeScaleChar matched")
 large_scale_char_matched <- summariseLargeScaleCharacteristics(
   cohort=cdm$matched_cohort,
   window = list(c(-Inf, -366), c(-365, -31), c(-30, -1), 
@@ -121,7 +127,7 @@ large_scale_char_matched <- summariseLargeScaleCharacteristics(
 
 toc()
 
-tic()
+tic("LArgeScaleChar sample")
 large_scale_char_sample <- summariseLargeScaleCharacteristics(
   cohort=cdm$sample,
   window = list(c(-Inf, -366), c(-365, -31), c(-30, -1), 
@@ -146,3 +152,6 @@ difference <- large_scale_char_sample  %>%
                                             mutate(difference =(`%.x`-`%.y`)/`%.y` ) %>% 
                                             filter(count.x!="<5")
 
+#write.csv(difference, paste0("~/CohortDx2023/phenotypeR_project/Results/dosage_",cohorts_name, "difference_lsc_",format(Sys.time(), "_%Y_%m_%d") , ".csv"))
+#write.csv(prev, paste0("~/CohortDx2023/phenotypeR_project/Results/dosage_",cohorts_name, "prevalence_",format(Sys.time(), "_%Y_%m_%d") , ".csv"))
+#write.csv(inc, paste0("~/CohortDx2023/phenotypeR_project/Results/dosage_",cohorts_name, "incidence_",format(Sys.time(), "_%Y_%m_%d") , ".csv"))
