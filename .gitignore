@@ -3,7 +3,7 @@
 .RData
 .Ruserdata
 *.RData
-/Results/*
-/Cohorts/*
-/Phoebe/*
+/Results/*.RData
+/Cohorts/*.json
+/Phoebe/*.csv
 /Old/*
