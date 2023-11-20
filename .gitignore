@@ -7,3 +7,4 @@
 /Cohorts/*.json
 /Phoebe/*.csv
 /Old/*
+.gitignore
