@@ -1,7 +1,7 @@
 rm(list=ls())
 
 # renv::snapshot()
-
+{
 ## Install Needed Packages
 # install.packages("CDMConnector")
 # install.packages("DBI")
@@ -19,7 +19,7 @@ rm(list=ls())
 # install.packages("IncidencePrevalence")
 # install.packages("tictoc")
 # pending install: SqlRender
-
+}
 
 # renv::activate()
 # renv::hydrate()
@@ -48,8 +48,8 @@ tic(msg = "phenotypeR total time run: ")
 
 tic(msg = "Connect to database")
 
-# server_dbi <- Sys.getenv("DB_SERVER_DBI_Pharmetrics") 
- server_dbi <- Sys.getenv("DB_SERVER_DBI_CPRDgold") 
+ server_dbi <- Sys.getenv("DB_SERVER_DBI_Pharmetrics") 
+# server_dbi <- Sys.getenv("DB_SERVER_DBI_CPRDgold") 
 user <- Sys.getenv("DB_USER") 
 port <- Sys.getenv("DB_PORT") 
 host <- Sys.getenv("DB_HOST")
@@ -66,9 +66,9 @@ cdm_Gold <- cdm_from_con(con = db,
                          cdm_schema = "public",
                          write_schema = "results")
 
- cdm_Gold_100k <- cdm_from_con(con = db,
-                               cdm_schema = "public_100k",
-                               write_schema = "results")
+ # cdm_Gold_100k <- cdm_from_con(con = db,
+ #                               cdm_schema = "public_100k",
+ #                               write_schema = "results")
 
 #getVocabVersion(cdm=cdm_Gold)
   
@@ -83,7 +83,7 @@ tic(msg = "Settings and loading of Phoebe")
 # ~/CohortDx2023/phenotypeR_project/Results
 cohort_json_dir <- here("Cohorts/")
 cdm <- cdm_Gold
-cohorts_name <- "hpv_vaccine_gold"
+cohorts_name <- "phenotyper_inc_pharm"
 concept_recommended <- read.csv(here("Phoebe/concept_recommended.csv"))
 
 toc(log = TRUE)
@@ -147,16 +147,41 @@ tic(msg = "Orphan codes + markdown readable text for only first cohort")
 
 cohort_set_res = cohort_set
 cohort_set_res$markdown <- ""
-counts_table <- dbSendQuery(db, "SELECT * FROM results.cohort_diagnostics_concept_counts_permanent_table")
-counts_table <- dbFetch(counts_table)
+# counts_table <- dbSendQuery(db, "SELECT * FROM results.cohort_diagnostics_concept_counts_permanent_table")
+# counts_table <- dbFetch(counts_table)
 
 ### Working with Achilles tables
-#achilles_analyses <- dbSendQuery(db, "SELECT * FROM results.achilles_analysis") 
-#achilles_analyses <- dbFetch(achilles_analyses) 
-#achilles_analyses_2 <-  achilles_analyses %>% filter(grepl('0$|1$', format(round(analysis_id, 0)), perl = TRUE))
+achilles_analyses <- dbSendQuery(db, "SELECT * FROM results.achilles_analysis") 
+achilles_analyses <- dbFetch(achilles_analyses) 
+achilles_analyses <-  achilles_analyses %>% filter(grepl('00$|01$', format(round(analysis_id, 0)), perl = TRUE))
+achilles_analyses <-  achilles_analyses %>% 
+                      filter(grepl('concept_id', stratum_1_name, perl = TRUE)) %>% 
+                      filter(!grepl(' era|death', analysis_name, perl = TRUE)) %>% 
+                      filter( !analysis_id %in% c(1300,1301))
+achilles_analyses <- achilles_analyses %>% mutate( type = ifelse(grepl("01$", format(round(analysis_id, 0)), 
+                                                                       perl = TRUE), "concept_count", "concept_subjects"))
+achilles_analyses <- achilles_analyses %>% select(c(analysis_id,type))
 
-#achilles_table <- dbSendQuery(db, "SELECT * FROM results.achilles_results") 
+achilles_table <- DBI::dbSendQuery(db, paste0("SELECT * FROM results.achilles_results WHERE analysis_id IN (",paste(achilles_analyses$analysis_id,sep=",", collapse=","),")")) 
+achilles_table <- dbFetch(achilles_table) %>% filter(stratum_1 !=0) %>% select(count_value,analysis_id, stratum_1) %>% right_join(achilles_analyses)
 
+table <- table(achilles_table$stratum_1)
+
+is.integer64 <- function(x){
+  class(x)=="integer64"
+}
+
+counts_table <- achilles_table %>% rename(concept_id=stratum_1) %>% 
+                  select(-analysis_id)                           %>%
+                  mutate_if(is.integer64, as.integer)            %>% 
+                  tidyr::pivot_wider(id_cols = concept_id,
+                                     names_from = type, 
+                                     values_from = count_value, 
+                                     values_fill=NA,
+                                     values_fn = max)    %>%
+                  mutate(concept_id = as.integer(concept_id))
+
+rm(achilles_analyses, achilles_table)
 
 code_counts <- tibble()
 
@@ -226,6 +251,10 @@ cohort_count <- cohort_count(cdm[[cohorts_name]])
 cohort_attrition <- cohort_attrition(cdm[[cohorts_name]])
 cohort_set_cdm <- cohort_set(cdm[[cohorts_name]])
 
+
+cohort_set_count <- cohort_count %>% left_join(cohort_set_cdm)
+
+
 #cdm <- cdm %>% 
 #  cdm_subset_cohort(cohort_table = cohorts_name)
 
@@ -263,31 +292,31 @@ toc(log = TRUE)
 ########### 8 - Visit Context  ###########
 # Low priority: tipe of visits Before, during, simultaneous, after
 # Could potentially be extracted from large scale ?
-
-tic(msg = "Large Scale Char ")
-
- large_scale_char <- summariseLargeScaleCharacteristics(
-                     cohort=cdm[[cohorts_name]],
-
-                     window = list(c(-Inf, -366), c(-365, -31), c(-30, -1), 
-                                   c(0, 0), 
-                                   c(1, 30), c(31, 365),  c(366, Inf)),
-                     # window =list(c(0, 0)),
-                     tablesToCharacterize = c("condition_occurrence", "drug_era", "visit_occurrence",
-                                              "measurement", "procedure_occurrence",  "observation"), 
-                     # Further options:
-                     #  "drug_exposure", 
-                     #  "device_exposure",  
-                     #   "condition_era", 
-                     # "specimen"),
-                     
-                     overlap = TRUE,
-                     minCellCount = 5
-                   )
-
- 
- toc(log = TRUE)
- 
+# 
+# tic(msg = "Large Scale Char ")
+# 
+#  large_scale_char <- summariseLargeScaleCharacteristics(
+#                      cohort=cdm[[cohorts_name]],
+# 
+#                      window = list(c(-Inf, -366), c(-365, -31), c(-30, -1), 
+#                                    c(0, 0), 
+#                                    c(1, 30), c(31, 365),  c(366, Inf)),
+#                      # window =list(c(0, 0)),
+#                      tablesToCharacterize = c("condition_occurrence", "drug_era", "visit_occurrence",
+#                                               "measurement", "procedure_occurrence",  "observation"), 
+#                      # Further options:
+#                      #  "drug_exposure", 
+#                      #  "device_exposure",  
+#                      #   "condition_era", 
+#                      # "specimen"),
+#                      
+#                      overlap = TRUE,
+#                      minCellCount = 5
+#                    )
+# 
+#  
+#  toc(log = TRUE)
+#  
  
 
  
@@ -299,9 +328,11 @@ tic(msg = "Large Scale Char ")
  
  tic(msg = "Incidence by year, age, sex")
  
- 
-cdm <- generateDenominatorCohortSet(
-  cdm = cdm, 
+# cdmSampled <- cdmSample(cdm, n = 100000)
+cdmSampled <- cdm
+
+cdmSampled <- generateDenominatorCohortSet(
+  cdm = cdmSampled, 
   name = "denominator", 
   cohortDateRange = NULL,
   ageGroup = list(c(0,17), c(18,64),
@@ -313,7 +344,7 @@ cdm <- generateDenominatorCohortSet(
 
 
 inc <- estimateIncidence(
-  cdm = cdm,
+  cdm = cdmSampled,
   denominatorTable = "denominator",
   outcomeTable = cohorts_name,
   interval = "years",
@@ -330,7 +361,7 @@ toc(log = TRUE)
 tic(msg = "Prevalence by year, age, sex")
 
 prev <- estimatePeriodPrevalence(
-  cdm = cdm,
+  cdm = cdmSampled,
   denominatorTable = "denominator",
   outcomeTable = cohorts_name,
   outcomeLookbackDays = NULL,
@@ -345,27 +376,27 @@ prev <- estimatePeriodPrevalence(
 
 toc()
 
-
+rm(cdmSampled)
 
 ########  7 - Index Event Breakdown ##############
 # Only missing thing !
 #  Add source field and Standard fields subjects and records
 # TEST: ONLY FOR CONDITIONS
-tic(msg = "Index Event Breakdown: only for conditions now")
-
-Index_events <- cdm[[cohorts_name]] %>%
-                left_join(
-                cdm$condition_occurrence,
-                by=join_by(subject_id==person_id, cohort_start_date==condition_start_date)) %>%
-                group_by(cohort_definition_id, condition_concept_id, condition_source_concept_id, condition_source_value) %>%
-                tally()  %>% 
-                left_join(cdm$concept %>% select(concept_id , concept_name), by=join_by(condition_concept_id==concept_id))  %>% 
-                rename( standard_concept=concept_name)  %>% 
-                left_join(cdm$concept %>% select(concept_id , concept_name), by=join_by(condition_source_concept_id==concept_id)) %>% 
-                rename( source_concept=concept_name)  %>%
-                collect() %>% filter( condition_concept_id %in% code_counts$concept_id_1)
-
-toc(log = TRUE)
+# tic(msg = "Index Event Breakdown: only for conditions now")
+# 
+# Index_events <- cdm[[cohorts_name]] %>%
+#                 left_join(
+#                 cdm$condition_occurrence,
+#                 by=join_by(subject_id==person_id, cohort_start_date==condition_start_date)) %>%
+#                 group_by(cohort_definition_id, condition_concept_id, condition_source_concept_id, condition_source_value) %>%
+#                 tally()  %>% 
+#                 left_join(cdm$concept %>% select(concept_id , concept_name), by=join_by(condition_concept_id==concept_id))  %>% 
+#                 rename( standard_concept=concept_name)  %>% 
+#                 left_join(cdm$concept %>% select(concept_id , concept_name), by=join_by(condition_source_concept_id==concept_id)) %>% 
+#                 rename( source_concept=concept_name)  %>%
+#                 collect() %>% filter( condition_concept_id %in% code_counts$concept_id_1)
+# 
+# toc(log = TRUE)
 
 ############# Logs ############
 
@@ -378,10 +409,10 @@ tic_log <- tic.log(format = TRUE)
 ############# Cleaning the environment ############
 
 
-rm(cdm, cdm_Gold,  cdm_Gold_100k,
-   db, code_counts_2, codes,
-   json2, cohortExpresion, original_codes_counts,
-   recommended_codes, recommended_codes_counts)
+ rm(cdm, cdm_Gold,  cdm_Gold_100k,
+    db, code_counts_2, codes,
+    json2, cohortExpresion, original_codes_counts,
+    recommended_codes, recommended_codes_counts)
 
  # rm(list = ls.str(mode = 'numeric'))
  # rm(list = ls.str(mode = 'character'))

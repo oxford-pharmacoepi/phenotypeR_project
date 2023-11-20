@@ -1,5 +1,5 @@
 
-rm(list=ls())
+#rm(list=ls())
 
 ### Open libraries
 library(CDMConnector)
@@ -19,30 +19,30 @@ tic(msg = "phenotypeR matched total time run: ")
 
 
 
-
-##### Connect to database using CDM COnnector ########
-
-
-tic(msg = "Connect to database")
-
-# server_dbi <- Sys.getenv("DB_SERVER_DBI_Pharmetrics") 
-server_dbi <- Sys.getenv("DB_SERVER_DBI_CPRDgold") 
-user <- Sys.getenv("DB_USER") 
-port <- Sys.getenv("DB_PORT") 
-host <- Sys.getenv("DB_HOST")
-
-db <- dbConnect(RPostgres::Postgres(), 
-                dbname = server_dbi, 
-                port = port, 
-                host = host, 
-                user = user, 
-                password = Sys.getenv("DB_PASSWORD") ) 
-
-
-cdm <- cdm_from_con(con = db,
-                         cdm_schema = "public",
-                         write_schema = "results",
-                    cohort_tables = "hpv_vaccines_cohorts")
+# 
+# ##### Connect to database using CDM COnnector ########
+# 
+# 
+ tic(msg = "Connect to database")
+# 
+# # server_dbi <- Sys.getenv("DB_SERVER_DBI_Pharmetrics") 
+# server_dbi <- Sys.getenv("DB_SERVER_DBI_CPRDgold") 
+# user <- Sys.getenv("DB_USER") 
+# port <- Sys.getenv("DB_PORT") 
+# host <- Sys.getenv("DB_HOST")
+# 
+# db <- dbConnect(RPostgres::Postgres(),
+#                 dbname = server_dbi,
+#                 port = port,
+#                 host = host,
+#                 user = user,
+#                 password = Sys.getenv("DB_PASSWORD") )
+# 
+# 
+# cdm <- cdm_from_con(con = db,
+#                          cdm_schema = "public",
+#                          write_schema = "results",
+#                     cohort_tables = cohorts_name)
 
 
 
@@ -54,8 +54,8 @@ toc(log = TRUE)
 
 tic(msg = "Settings and loading of Phoebe")
 # ~/CohortDx2023/phenotypeR_project/Results
-cohort_json_dir <- here("Cohorts/")
-cohorts_name <- "hpv_diagnostics_cohorts"
+#cohort_json_dir <- here("Cohorts/")
+#cohorts_name <- "hpv_diagnostics_cohorts"
 
 toc(log = TRUE)
 
@@ -64,13 +64,13 @@ tic(msg = "Generate Cohort Set")
 
 
 #list.files(cohort_json_dir)
-cohort_set <- read_cohort_set(cohort_json_dir)
+# cohort_set <- read_cohort_set(cohort_json_dir)
 
-cdm <-   generateCohortSet(cdm, 
-                           cohort_set,
-                           name = cohorts_name,
-                           computeAttrition = TRUE,
-                           overwrite = TRUE)
+# cdm <-   generateCohortSet(cdm, 
+#                            cohort_set,
+#                            name = cohorts_name,
+#                            computeAttrition = TRUE,
+#                            overwrite = FALSE)
 
 toc(log = TRUE)
 
