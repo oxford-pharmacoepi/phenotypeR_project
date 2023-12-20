@@ -18,8 +18,6 @@ tic.clearlog()
 tic.clear()
 tic(msg = "phenotypeR matched total time run: ")
 
-
-
 # 
 # ##### Connect to database using CDM COnnector ########
 # 
@@ -39,12 +37,14 @@ tic(msg = "phenotypeR matched total time run: ")
 #                 user = user,
 #                 password = Sys.getenv("DB_PASSWORD") )
 # 
-# 
+# Define main variables
+# cohorts_name <- "..."
+# cohort_definition_id <- ..
+
 # cdm <- cdm_from_con(con = db,
 #                          cdm_schema = "public",
 #                          write_schema = "results",
 #                     cohort_tables = cohorts_name)
-
 
 
 #getVocabVersion(cdm=cdm_Gold)
@@ -73,14 +73,8 @@ tic(msg = "Generate Cohort Set")
 #                            computeAttrition = TRUE,
 #                            overwrite = FALSE)
 
-toc(log = TRUE)
-
-
-tic(msg = "Generate Sample and Matched sample")
-
 
 toc(log = TRUE)
-
 
 tic(msg = "Generate Sample and Matched sample")
 
