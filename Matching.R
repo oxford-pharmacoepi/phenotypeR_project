@@ -84,14 +84,17 @@ toc(log = TRUE)
 
 tic(msg = "Generate Sample and Matched sample")
 
+cdm$sample <- cdm[[cohorts_name]]  %>% 
+  slice_sample(n  = 1000,
+               by = cohort_definition_id) 
 
 cdm <- CohortConstructor::generateMatchedCohortSet(cdm   = cdm,
                                                    name  = "matched_cohort", 
-                                                   targetCohortName = cohorts_name,
-                                                   targetCohortId   = NULL,
+                                                   targetCohortName = sample,
+                                                   targetCohortId   = cohort_definition_id,
                                                    matchSex         = TRUE,
                                                    matchYearOfBirth = TRUE,
-                                                   ratio = 2)
+                                                   ratio = 1)
 
 toc(log = TRUE)
 
