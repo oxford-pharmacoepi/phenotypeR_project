@@ -328,8 +328,8 @@ toc(log = TRUE)
  
  tic(msg = "Incidence by year, age, sex")
  
-# cdmSampled <- cdmSample(cdm, n = 100000)
-cdmSampled <- cdm
+ cdmSampled <- cdmSample(cdm, n = 100000)
+# cdmSampled <- cdm
 
 cdmSampled <- generateDenominatorCohortSet(
   cdm = cdmSampled, 
