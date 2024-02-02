@@ -50,8 +50,8 @@ tic(msg = "phenotypeR total time run: ")
 
 tic(msg = "Settings and loading of Phoebe")
 
-cohort_json_dir <- here("Cohorts/")
-cohorts_name <- "100k_aesi1"
+cohort_json_dir <- "C:/Users/apratsuribe/OneDrive - Nexus365/DARWIN/Github_repos/phenotypeR_project/Cohorts/"
+cohorts_name <- "aesi_phenotyper2"
 concept_recommended <- read.csv(here("Phoebe/concept_recommended.csv"))
 prefix <- "apu_"
 
@@ -62,8 +62,8 @@ toc(log = TRUE)
 ##### Connect to database using CDM COnnector ########
 tic(msg = "Connect to database")
 
- server_dbi <- Sys.getenv("DB_SERVER_DBI_Pharmetrics") 
-# server_dbi <- Sys.getenv("DB_SERVER_DBI_CPRDgold") 
+# server_dbi <- Sys.getenv("DB_SERVER_DBI_Pharmetrics") 
+ server_dbi <- Sys.getenv("DB_SERVER_DBI_CPRDgold") 
 user <- Sys.getenv("DB_USER") 
 port <- Sys.getenv("DB_PORT") 
 host <- Sys.getenv("DB_HOST")
@@ -79,7 +79,9 @@ db <- dbConnect(RPostgres::Postgres(),
 cdm <- cdm_from_con(con = db,
                          cdm_schema = c(schema = "public"),
                          write_schema = c(schema= "results", prefix = prefix),
-                    achilles_schema = "results")
+                    achilles_schema = "results"
+                   # ,cohort_tables = cohorts_name  # to load cohorts already there
+                    )
 
 toc(log = TRUE)
 
@@ -170,7 +172,7 @@ for (n in  row_number(cohort_set_res) ) {
   ### Ideally reads the same JSON character line
   json2 <- jsonlite::read_json(paste0(cohort_json_dir, cohort, ".json"))
   codes <- codesFromCohort(paste0(cohort_json_dir, cohort, ".json"), cdm, withConceptDetails = F)
-  code_counts_2 <- tibble()
+  #code_counts_2 <- tibble()
   
   for (code_list in codes) {
     codes_id <- code_list
@@ -187,8 +189,8 @@ for (n in  row_number(cohort_set_res) ) {
                                 minCellCount = 5) %>%  
                                 left_join( recommended_codes, 
                                            join_by(standard_concept_id == concept_id_2 ) ) %>%
-                                mutate(type="original_codes", cohort=cohort, 
-                                relationship_id="original_codes"  )
+                                mutate(type="reccomended_codes", cohort=cohort, 
+                                relationship_id="reccomended_codes"  )
 
     original_codes_counts <- achillesCodeUse(list("original_codes" = codes_id),
                                                 cdm,
@@ -212,7 +214,7 @@ for (n in  row_number(cohort_set_res) ) {
                                           cdm, 
                                           cohortTable=cohorts_name,
                                           timing = "entry",
-                                          countBy = "person",
+                                          countBy =  c("record", "person"),
                                           byConcept = TRUE,
                                           cohortId = n)
   index_events <- rbind(index_events, Index_events )

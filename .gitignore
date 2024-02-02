@@ -5,6 +5,8 @@
 *.RData
 /Results/*.RData
 /Cohorts/*.json
+/Cohorts/*.zip
+/Cohorts/*.csv
 /Phoebe/*.csv
 /Old/*
 .gitignore
