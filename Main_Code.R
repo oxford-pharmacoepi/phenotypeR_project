@@ -51,7 +51,7 @@ tic(msg = "phenotypeR total time run: ")
 tic(msg = "Settings and loading of Phoebe")
 
 cohort_json_dir <- "C:/Users/apratsuribe/OneDrive - Nexus365/DARWIN/Github_repos/phenotypeR_project/Cohorts/"
-cohorts_name <- "aesi_phenotyper2"
+cohorts_name <- "ards_"
 concept_recommended <- read.csv(here("Phoebe/concept_recommended.csv"))
 prefix <- "apu_"
 
@@ -359,7 +359,7 @@ toc(log = TRUE)
      mutate(numx =as.double(`estimate.x`),
             numy =as.double(`estimate.y`)) %>%
    mutate(difference =(numx-numy)/numy )
- 
+ rm(matched_cohort)
 ####### Step 6: - Incidence Rates ################
  # Stratified by Age 10y, Gender, Calendar Year
  # For now stratified by kid-Adult-Older Adult 
