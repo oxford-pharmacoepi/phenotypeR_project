@@ -51,9 +51,9 @@ tic(msg = "phenotypeR total time run: ")
 tic(msg = "Settings and loading of Phoebe")
 
 cohort_json_dir <- "C:/Users/apratsuribe/OneDrive - Nexus365/DARWIN/Github_repos/phenotypeR_project/Cohorts/"
-cohorts_name <- "ards_"
+cohorts_name <- "hpv_"
 concept_recommended <- read.csv(here("Phoebe/concept_recommended.csv"))
-prefix <- "apu_"
+prefix <- "apu"
 
 toc(log = TRUE)
 
@@ -80,7 +80,7 @@ cdm <- cdm_from_con(con = db,
                          cdm_schema = c(schema = "public"),
                          write_schema = c(schema= "results", prefix = prefix),
                     achilles_schema = "results"
-                   # ,cohort_tables = cohorts_name  # to load cohorts already there
+                    #,cohort_tables = cohorts_name  # to load cohorts already there
                     )
 
 toc(log = TRUE)
@@ -209,7 +209,7 @@ for (n in  row_number(cohort_set_res) ) {
   ####### Cohort index
   
   tic(msg = "Index Event Breakdown")
-  
+  try({
   Index_events <- summariseCohortCodeUse( x= codes,
                                           cdm, 
                                           cohortTable=cohorts_name,
@@ -218,6 +218,7 @@ for (n in  row_number(cohort_set_res) ) {
                                           byConcept = TRUE,
                                           cohortId = n)
   index_events <- rbind(index_events, Index_events )
+  })
   toc(log = TRUE)
   
    } 
@@ -270,7 +271,7 @@ toc(log = TRUE)
 #                                                            matchYearOfBirth = TRUE,
 #                                                            ratio = 1)
 # 
-# toc()
+#  toc(log = TRUE)
 #  tic(msg = "Large Scale Char ")
 #  
 
@@ -329,7 +330,7 @@ toc(log = TRUE)
    minimumFrequency = 0.0005
  )
  
- toc()
+ toc(log = TRUE)
  
  tic("LArgeScaleChar sample")
  large_scale_char_sample <- summariseLargeScaleCharacteristics(
@@ -344,9 +345,9 @@ toc(log = TRUE)
    minCellCount = 5,
    minimumFrequency = 0.0005
  )
- toc()
+ toc(log = TRUE)
  
- 
+ tic("LArgeScaleChar difference")
  difference <- large_scale_char_sample  %>% 
    left_join( large_scale_char_matched, 
               by = join_by(result_type, cdm_name, 
@@ -359,6 +360,9 @@ toc(log = TRUE)
      mutate(numx =as.double(`estimate.x`),
             numy =as.double(`estimate.y`)) %>%
    mutate(difference =(numx-numy)/numy )
+ 
+ toc(log = TRUE)
+ 
  rm(matched_cohort)
 ####### Step 6: - Incidence Rates ################
  # Stratified by Age 10y, Gender, Calendar Year
@@ -367,8 +371,8 @@ toc(log = TRUE)
  
  tic(msg = "Incidence by year, age, sex")
  
-# cdmSampled <- cdmSample(cdm, n = 100000)
- cdmSampled <- cdm
+ cdmSampled <- cdmSample(cdm, n = 100000)
+ #cdmSampled <- cdm
 
 cdmSampled <- generateDenominatorCohortSet(
   cdm = cdmSampled, 
@@ -411,7 +415,9 @@ prev <- estimatePeriodPrevalence(
 )
 
 
-toc()
+
+toc(log = TRUE)
+
 
 rm(cdmSampled)
 

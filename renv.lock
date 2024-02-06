@@ -11,7 +11,7 @@
   "Packages": {
     "CDMConnector": {
       "Package": "CDMConnector",
-      "Version": "1.2.1",
+      "Version": "1.3.0",
       "Source": "Repository",
       "Repository": "CRAN",
       "Requirements": [
@@ -27,10 +27,10 @@
         "jsonlite",
         "lifecycle",
         "methods",
+        "omopgenerics",
         "purrr",
         "readr",
         "rlang",
-        "snakecase",
         "stringi",
         "stringr",
         "tidyr",
@@ -38,7 +38,7 @@
         "waldo",
         "withr"
       ],
-      "Hash": "f55f3d711ea6683bfbb51fddb8e2bdd6"
+      "Hash": "16612a52356bcf96f40849c7c5fa85b3"
     },
     "CirceR": {
       "Package": "CirceR",
@@ -1002,6 +1002,25 @@
         "utils"
       ],
       "Hash": "0984ce8da8da9ead8643c5cbbb60f83e"
+    },
+    "omopgenerics": {
+      "Package": "omopgenerics",
+      "Version": "0.0.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "cli",
+        "dbplyr",
+        "dplyr",
+        "glue",
+        "rlang",
+        "snakecase",
+        "stringr",
+        "tidyr",
+        "tidyselect"
+      ],
+      "Hash": "aaaeee1e72dee45660ab0e66c6c87624"
     },
     "pillar": {
       "Package": "pillar",
