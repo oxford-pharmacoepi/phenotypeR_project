@@ -495,9 +495,20 @@ tic_log <- tic.log(format = TRUE)
  # rm(list = ls.str(mode = 'numeric'))
  # rm(list = ls.str(mode = 'character'))
 
+analyses_performed <- as.integer(c(GenerateCohort, 
+                             CalculateOverlap,
+                             runCountCodes,
+                             runIndexEvents,
+                             runProfiling, 
+                             runMatchedSampleLSC, 
+                             runIncidence, 
+                             runPrevalence, 
+                             SampleIncidencePrevalence
+                              ))
 
+analyses_performed <-  paste(analyses_performed , collapse = "_")
 ##### Save results ############
 save(list=ls(), 
-     file = here(paste0("Results/",cohorts_name, format(Sys.time(), "_%Y_%m_%d") , ".RData")))
+     file = here(paste0("Results/",cohorts_name,"_", analyses_performed, "_" ,format(Sys.time(), "_%Y_%m_%d") , ".RData")))
 
 
