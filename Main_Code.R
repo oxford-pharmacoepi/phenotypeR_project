@@ -53,15 +53,16 @@ tic(msg = "Settings and loading of Phoebe")
 cohort_json_dir <- "C:/Users/apratsuribe/OneDrive - Nexus365/DARWIN/Github_repos/phenotypeR_project/Cohorts/"
 cohorts_name <- "hpv_"
 prefix <- "apu"
-schema <- "public"
-#schema <- "public_100K" 
+database_name <- "CPRDGold"
+#schema <- "public"
+schema <- "public_100k" 
 
 GenerateCohort=TRUE              #### Generate cohort or use preloaded cohorts
-CalculateOverlap=TRUE            #### Calculate Overlap
+CalculateOverlap=FALSE            #### Calculate Overlap
 runCountCodes = FALSE            #### run orphan codes and count codes
 runIndexEvents = FALSE           #### run index events
 runProfiling = FALSE             #### run age and time in database characterisation
-runMatchedSampleLSC = TRUE       #### run matched LSC
+runMatchedSampleLSC = FALSE       #### run matched LSC
 runIncidence=FALSE               #### run Incidence
 runPrevalence= FALSE             #### run Prevalence
 SampleIncidencePrevalence = NULL #### Sample for Incidence Prevalence (NULL if all cdm)
@@ -509,6 +510,6 @@ analyses_performed <- as.integer(c(GenerateCohort,
 analyses_performed <-  paste(analyses_performed , collapse = "_")
 ##### Save results ############
 save(list=ls(), 
-     file = here(paste0("Results/",cohorts_name,"_", analyses_performed, "_" ,format(Sys.time(), "_%Y_%m_%d") , ".RData")))
+     file = here(paste0("Results/",cohorts_name,"_",database_name,"_",schema, "_", analyses_performed, "_" ,format(Sys.time(), "_%Y_%m_%d") , ".RData")))
 
 
