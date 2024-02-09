@@ -50,6 +50,7 @@ tic(msg = "phenotypeR total time run: ")
 
 tic(msg = "Settings and loading of Phoebe")
 
+
 cohort_json_dir <- here("Cohorts")
 cohorts_name <- "shiny_dev"
 prefix <- "nmb"
@@ -538,5 +539,6 @@ analyses_performed <-  paste(analyses_performed , collapse = "_")
 ##### Save results ############
 save(input, output, 
      file = here(paste0("Results/", input$cdmName, "_", cohorts_name,"_", analyses_performed, "_" ,format(Sys.time(), "_%Y_%m_%d") , ".RData")))
+
 
 
