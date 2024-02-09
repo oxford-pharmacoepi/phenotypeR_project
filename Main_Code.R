@@ -54,20 +54,20 @@ tic(msg = "Settings and loading of Phoebe")
 cohort_json_dir <- here("Cohorts")
 cohorts_name <- "hpv_"
 prefix <- "apu"
-# cdm_schema <- "public"
-cdm_schema <- "public_100k"
+ cdm_schema <- "public"
+# cdm_schema <- "public_100k"
 results_schema <- "results"
 
 # Input 
 input <- list(
-  runGenerateCohort = T,              #### Generate cohort or use preloaded cohorts
-  runCalculateOverlap = T,            #### Calculate Overlap
-  runCountCodes = T,                  #### run orphan codes and count codes
-  runIndexEvents = T,                 #### run index events
+  runGenerateCohort = F,              #### Generate cohort or use preloaded cohorts
+  runCalculateOverlap = F,            #### Calculate Overlap
+  runCountCodes = F,                  #### run orphan codes and count codes
+  runIndexEvents = F,                 #### run index events
   runProfiling = F,                   #### run age and time in database characterisation
   runMatchedSampleLSC = F,            #### run matched LSC
-  runIncidence = F,                   #### run Incidence
-  runPrevalence = F,                  #### run Prevalence
+  runIncidence = T,                   #### run Incidence
+  runPrevalence = T,                  #### run Prevalence
   sampleIncidencePrevalence = 100000, #### Sample for Incidence Prevalence (NULL if all cdm)
   cdmName = "CPRDgold"
 )
@@ -461,7 +461,8 @@ if (input$runIncidence|input$runPrevalence) {
     ageGroup = list(c(0,17), c(18,64),
                     c(65,199)),
     sex = c("Male", "Female", "Both"),
-    daysPriorObservation = 180
+    daysPriorObservation = 180,
+    overwrite = TRUE
   )
 }
 
@@ -471,7 +472,7 @@ tic(msg = "Incidence by year, age, sex")
 
 if (input$runIncidence ) {
   
-  inc <- estimateIncidence(
+  output$incidence <- estimateIncidence(
     cdm = cdmSampled,
     denominatorTable = "denominator",
     outcomeTable = cohorts_name,
@@ -489,7 +490,7 @@ toc(log = TRUE)
 tic(msg = "Prevalence by year, age, sex")
 
 if (input$runPrevalence ) {
-  prev <- estimatePeriodPrevalence(
+  output$prevalence <- estimatePeriodPrevalence(
     cdm = cdmSampled,
     denominatorTable = "denominator",
     outcomeTable = cohorts_name,
@@ -537,7 +538,7 @@ analyses_performed <- as.integer(c(input$runGenerateCohort,
                                    input$runMatchedSampleLSC, 
                                    input$runIncidence, 
                                    input$runPrevalence, 
-                                   input$sampleIncidencePrevalence
+                                   !is.null(input$sampleIncidencePrevalence)
 ))
 
 analyses_performed <-  paste(analyses_performed , collapse = "_")
