@@ -20,7 +20,7 @@ rm(list=ls())
 # pending install: SqlRender
 # install.packages("remotes")
 # remotes::install_github("oxford-pharmacoepi/CohortConstructor")
-  
+# remotes::install_github("darwin-eu-dev/IncidencePrevalence@omopgenerics")  
 }
 
 # renv::activate()
@@ -60,14 +60,14 @@ results_schema <- "results"
 
 # Input 
 input <- list(
-  runGenerateCohort = F,              #### Generate cohort or use preloaded cohorts
+  runGenerateCohort = T,              #### Generate cohort or use preloaded cohorts
   runCalculateOverlap = T,            #### Calculate Overlap
   runCountCodes = T,                  #### run orphan codes and count codes
   runIndexEvents = T,                 #### run index events
-  runProfiling = T,                   #### run age and time in database characterisation
-  runMatchedSampleLSC = T,            #### run matched LSC
-  runIncidence = T,                   #### run Incidence
-  runPrevalence = T,                  #### run Prevalence
+  runProfiling = F,                   #### run age and time in database characterisation
+  runMatchedSampleLSC = F,            #### run matched LSC
+  runIncidence = F,                   #### run Incidence
+  runPrevalence = F,                  #### run Prevalence
   sampleIncidencePrevalence = 100000, #### Sample for Incidence Prevalence (NULL if all cdm)
   cdmName = "CPRDgold"
 )
@@ -239,16 +239,17 @@ for (n in  row_number(cohort_set_res) ) {
                                                     cdm,
                                                     countBy = c("record", "person"),
                                                     minCellCount = 5) %>%  
+          mutate(standard_concept_id= as.integer(group_level )) %>%
           left_join( recommended_codes, 
                      join_by(standard_concept_id == concept_id_2 ) ) %>%
-          mutate(type="reccomended_codes", cohort=cohort, 
-                 relationship_id="reccomended_codes"  )
+          mutate(type="reccomended_codes", cohort=cohort )
         
         
         original_codes_counts <- achillesCodeUse(list("original_codes" = codes_id),
                                                  cdm,
                                                  countBy = c("record", "person"),
                                                  minCellCount = 5) %>%  
+          mutate(standard_concept_id= as.integer(group_level )) %>% 
           left_join( recommended_codes, 
                      join_by(standard_concept_id == concept_id_2 ) ) %>%
           mutate(type="original_codes", cohort=cohort, relationship_id="original_codes", 
