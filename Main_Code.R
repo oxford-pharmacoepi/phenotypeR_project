@@ -1,6 +1,6 @@
 rm(list=ls())
 ##### Package installation #####
-# renv::snapshot()
+ renv::snapshot()
 {
 ## Install Needed Packages
 # install.packages("CDMConnector")
@@ -46,31 +46,40 @@ tic.clear()
 tic(msg = "phenotypeR total time run: ")
 
 ##### Options and set-up:  directories and settings ######
-
+options(error = quote(dump.frames("testdump", TRUE, TRUE)))
 
 tic(msg = "Settings and loading of Phoebe")
 
 
 cohort_json_dir <- here("Cohorts")
-cohorts_name <- "shiny_dev"
-prefix <- "nmb"
+cohorts_name <- "hpv_"
+prefix <- "apu"
 # cdm_schema <- "public"
 cdm_schema <- "public_100k"
 results_schema <- "results"
 
 # Input 
 input <- list(
-  runGenerateCohort = TRUE,         #### Generate cohort or use preloaded cohorts
-  runCalculateOverlap = TRUE,       #### Calculate Overlap
-  runCountCodes = TRUE,             #### run orphan codes and count codes
-  runIndexEvents = TRUE,            #### run index events
-  runProfiling = TRUE,              #### run age and time in database characterisation
-  runMatchedSampleLSC = TRUE,       #### run matched LSC
-  runIncidence = FALSE,             #### run Incidence
-  runPrevalence = FALSE,            #### run Prevalence
-  sampleIncidencePrevalence = NULL, #### Sample for Incidence Prevalence (NULL if all cdm)
-  cdmName = "PHARMETRICS"
+  runGenerateCohort = F,              #### Generate cohort or use preloaded cohorts
+  runCalculateOverlap = T,            #### Calculate Overlap
+  runCountCodes = T,                  #### run orphan codes and count codes
+  runIndexEvents = T,                 #### run index events
+  runProfiling = T,                   #### run age and time in database characterisation
+  runMatchedSampleLSC = T,            #### run matched LSC
+  runIncidence = T,                   #### run Incidence
+  runPrevalence = T,                  #### run Prevalence
+  sampleIncidencePrevalence = 100000, #### Sample for Incidence Prevalence (NULL if all cdm)
+  cdmName = "CPRDgold"
 )
+
+# Database details
+#server_dbi <- Sys.getenv("DB_SERVER_DBI_Pharmetrics") 
+server_dbi <- Sys.getenv("DB_SERVER_DBI_CPRDgold") 
+user <- Sys.getenv("DB_USER") 
+port <- Sys.getenv("DB_PORT") 
+host <- Sys.getenv("DB_HOST")
+
+
 
 
 # To export output 
@@ -93,11 +102,6 @@ toc(log = TRUE)
 ##### Connect to database using CDM COnnector ########
 tic(msg = "Connect to database")
 
-# server_dbi <- Sys.getenv("DB_SERVER_DBI_Pharmetrics") 
-server_dbi <- Sys.getenv("DB_SERVER_DBI_ph") 
-user <- Sys.getenv("DB_USER") 
-port <- Sys.getenv("DB_PORT") 
-host <- Sys.getenv("DB_HOST")
 
 db <- dbConnect(RPostgres::Postgres(), 
                 dbname = server_dbi, 
