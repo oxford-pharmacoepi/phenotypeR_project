@@ -11,3 +11,4 @@
 /Old/*
 .gitignore
 renv.lock
+*.rda
