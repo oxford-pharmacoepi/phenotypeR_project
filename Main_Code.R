@@ -515,7 +515,8 @@ toc(log = TRUE)
 tic.log(format = TRUE)
 tic_log <- tic.log(format = TRUE)
 
-output$log <- tic_log
+output$log <- tibble(cdm_name = input$cdmName, log = paste0(tic_log %>%  unlist(), collapse = "\n"))
+
 
 
 
