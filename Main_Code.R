@@ -183,7 +183,8 @@ summary_intersections <- cdm[[cohorts_name]] %>%
   summarize(intersect_count = n()) %>% 
   collect()
 
-output$cohort_overlap <- summary_intersections
+output$cohort_overlap <- summary_intersections %>% 
+  mutate(cdm_name = input$cdmName)
 }
 toc(log = TRUE)
 
