@@ -19,7 +19,6 @@ library(stringr)
 library(tidyr)
 library(fresh)
 library(rclipboard)
-library(visOmopResults)
 
 # Variables
 dataFolder <- "data"
