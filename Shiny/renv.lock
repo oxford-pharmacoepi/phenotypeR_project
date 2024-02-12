@@ -151,6 +151,30 @@
       ],
       "Hash": "93637e906f3fe962413912c956eb44db"
     },
+    "bit": {
+      "Package": "bit",
+      "Version": "4.0.5",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R"
+      ],
+      "Hash": "d242abec29412ce988848d0294b208fd"
+    },
+    "bit64": {
+      "Package": "bit64",
+      "Version": "4.0.5",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "R",
+        "bit",
+        "methods",
+        "stats",
+        "utils"
+      ],
+      "Hash": "9fe98599ca456d6552421db0d6772d8f"
+    },
     "bitops": {
       "Package": "bitops",
       "Version": "1.0-7",
@@ -784,6 +808,18 @@
       ],
       "Hash": "2a0dc8c6adfb6f032e4d4af82d258ab5"
     },
+    "packrat": {
+      "Package": "packrat",
+      "Version": "0.9.2",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "tools",
+        "utils"
+      ],
+      "Hash": "55ddd2d4a1959535f18393478b0c14a6"
+    },
     "pillar": {
       "Package": "pillar",
       "Version": "1.9.0",
@@ -975,6 +1011,28 @@
         "R"
       ],
       "Hash": "4c8415e0ec1e29f3f4f6fc108bef0144"
+    },
+    "rsconnect": {
+      "Package": "rsconnect",
+      "Version": "1.2.1",
+      "Source": "Repository",
+      "Repository": "RSPM",
+      "Requirements": [
+        "R",
+        "cli",
+        "curl",
+        "digest",
+        "jsonlite",
+        "lifecycle",
+        "openssl",
+        "packrat",
+        "renv",
+        "rlang",
+        "rstudioapi",
+        "tools",
+        "yaml"
+      ],
+      "Hash": "94bb3a2125b01b13dd2e4a784c2a9639"
     },
     "rstudioapi": {
       "Package": "rstudioapi",

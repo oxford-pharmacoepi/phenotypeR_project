@@ -19,6 +19,11 @@ library(stringr)
 library(tidyr)
 library(fresh)
 library(rclipboard)
+library(bit)
+library(bit64)
+library(rsconnect)
+library(packrat)
+
 
 # Variables
 dataFolder <- "data"

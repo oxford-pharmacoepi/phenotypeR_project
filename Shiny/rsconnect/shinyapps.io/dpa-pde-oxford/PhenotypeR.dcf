@@ -1,0 +1,12 @@
+name: PhenotypeR
+title: PhenotypeR
+username: dpa-pde-oxford
+account: dpa-pde-oxford
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 11200021
+bundleId: 8246497
+url: https://dpa-pde-oxford.shinyapps.io/PhenotypeR/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
