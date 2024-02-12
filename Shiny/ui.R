@@ -251,6 +251,36 @@ ui <- dashboardPage(
           type = "tabs",
           tabPanel(
             "Table",
+            h5(),
+            div(
+              style = "display: inline-block;vertical-align:top; width: 150px;",
+              pickerInput(
+                inputId = "select_prevalence_columns",
+                label = "Columns to display",
+                choices = stringr::str_to_sentence(
+                  gsub("_", " ", 
+                       c("cdm_name", "denominator_age_group", "denominator_sex", "denominator_days_prior_observation",
+                         "outcome_cohort_name", "prevalence_start_date", "prevalence_end_date",                    
+                         "n_cases", "n_population", "prevalence",                             
+                         "prevalence_95CI_lower", "prevalence_95CI_upper", "population_obscured",                    
+                         "cases_obscured", "result_obscured", "analysis_type", "analysis_interval",                    
+                         "analysis_complete_database_intervals", "analysis_time_point", "analysis_full_contribution"))),
+                selected = stringr::str_to_sentence(
+                  gsub("_", " ", 
+                       c("cdm_name", "denominator_age_group", "denominator_sex", "denominator_days_prior_observation",
+                         "outcome_cohort_name", "prevalence_start_date", "prevalence_end_date",                    
+                         "n_cases", "n_population", "prevalence",                             
+                         "prevalence_95CI_lower", "prevalence_95CI_upper", "population_obscured",                    
+                         "cases_obscured", "result_obscured", "analysis_type", "analysis_interval",                    
+                         "analysis_complete_database_intervals", "analysis_time_point", "analysis_full_contribution"))),
+                options = list(
+                  `actions-box` = TRUE,
+                  size = 10,
+                  `selected-text-format` = "count > 3"
+                ),
+                multiple = TRUE
+              )
+            ),
             DTOutput("prevalence_table")
           ),
           tabPanel(
@@ -273,6 +303,34 @@ ui <- dashboardPage(
           type = "tabs",
           tabPanel(
             "Table",
+            h5(),
+            div(
+              style = "display: inline-block;vertical-align:top; width: 150px;",
+              pickerInput(
+                inputId = "select_incident_columns",
+                label = "Columns to display",
+                choices = stringr::str_to_sentence(
+                  gsub("_", " ", 
+                       c("cdm_name", "denominator_age_group", "denominator_sex", "denominator_days_prior_observation",
+                         "outcome_cohort_name", "incidence_start_date", "incidence_end_date",                    
+                         "n_events", "n_persons", "person_years", "incidence_100000_pys",                             
+                         "incidence_100000_pys_95CI_lower", "incidence_100000_pys_95CI_upper", 
+                         "cohort_obscured", "result_obscured","analysis_interval", "analysis_complete_database_intervals"))),
+                selected = stringr::str_to_sentence(
+                  gsub("_", " ", 
+                       c("cdm_name", "denominator_age_group", "denominator_sex", "denominator_days_prior_observation",
+                         "outcome_cohort_name", "incidence_start_date", "incidence_end_date",                    
+                         "n_events", "n_persons", "person_years", "incidence_100000_pys",                             
+                         "incidence_100000_pys_95CI_lower", "incidence_100000_pys_95CI_upper", 
+                         "cohort_obscured", "result_obscured","analysis_interval", "analysis_complete_database_intervals"))),
+                options = list(
+                  `actions-box` = TRUE,
+                  size = 10,
+                  `selected-text-format` = "count > 3"
+                ),
+                multiple = TRUE
+              )
+            ),
             DTOutput("incidence_table")
           ),
           tabPanel(
