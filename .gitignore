@@ -12,3 +12,6 @@
 .gitignore
 renv.lock
 *.rda
+*.json
+Cohorts/newHPV/Phoebe_rec.csv
+*.dcf

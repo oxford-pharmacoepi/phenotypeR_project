@@ -1,6 +1,6 @@
 rm(list=ls())
 ##### Package installation #####
- renv::snapshot()
+# renv::snapshot()
 {
 ## Install Needed Packages
 # install.packages("CDMConnector")
@@ -51,7 +51,7 @@ options(error = quote(dump.frames("testdump", TRUE, TRUE)))
 tic(msg = "Settings and loading of Phoebe")
 
 
-cohort_json_dir <- here("Cohorts")
+cohort_json_dir <- here("Cohorts/newHPV")
 cohorts_name <- "hpv_"
 prefix <- "apu"
  cdm_schema <- "public"
@@ -60,15 +60,15 @@ results_schema <- "results"
 
 # Input 
 input <- list(
-  runGenerateCohort = F,              #### Generate cohort or use preloaded cohorts
+  runGenerateCohort = T,              #### Generate cohort or use preloaded cohorts
   runCalculateOverlap = F,            #### Calculate Overlap
-  runCountCodes = F,                  #### run orphan codes and count codes
+  runCountCodes = T,                  #### run orphan codes and count codes
   runIndexEvents = F,                 #### run index events
   runProfiling = F,                   #### run age and time in database characterisation
   runMatchedSampleLSC = F,            #### run matched LSC
-  runIncidence = T,                   #### run Incidence
-  runPrevalence = T,                  #### run Prevalence
-  sampleIncidencePrevalence = 100000, #### Sample for Incidence Prevalence (NULL if all cdm)
+  runIncidence = F,                   #### run Incidence
+  runPrevalence = F,                  #### run Prevalence
+  sampleIncidencePrevalence = 1000000, #### Sample for Incidence Prevalence (NULL if all cdm)
   cdmName = "CPRDgold"
 )
 
@@ -222,11 +222,10 @@ for (n in  row_number(cohort_set_res) ) {
   ### Ideally reads the same JSON character line
   json2 <- jsonlite::read_json(paste0(cohort_json_dir, "/", cohort, ".json"))
   codes <- codesFromCohort(paste0(cohort_json_dir, "/", cohort, ".json"), cdm, withConceptDetails = F)
-  #code_counts_2 <- tibble()
+
   
-  for (code_list in codes) {
-    
-    codes_id <- code_list
+  codes_id <- unlist(codes, recursive = TRUE, use.names = F)
+
     if (input$runCountCodes) {
       recommended_codes <- concept_recommended %>% 
         filter(concept_id_1 %in% codes_id ) %>% 
@@ -259,7 +258,7 @@ for (n in  row_number(cohort_set_res) ) {
         code_counts <- rbind(code_counts, recommended_codes_counts, original_codes_counts )
       }
     })
-  }  
+  
   
   ####### Cohort index
   
