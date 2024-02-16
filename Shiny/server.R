@@ -347,31 +347,71 @@ server <- function(input, output, session) {
       select(input$select_lsc_columns)
   })
   output$lsc_plot <- renderPlotly({
-    table <- filterData(data$lsc_table, "lsc", input) %>% 
-      mutate(label = paste0(concept_name, "; ", window))
+    table <- filterData(data$lsc_table, "lsc", input) 
     
-    if(!is.null(input$plsc_facet)){
+    if(!is.null(input$plsc_facet_by) & !is.null(input$plsc_color)){
       p <- table %>%
         unite("facet_var",
-              c(all_of(input$plsc_facet)), remove = FALSE, sep = "; ") %>%
+              c(all_of(input$plsc_facet_by)), remove = FALSE, sep = "; ") %>%
+        unite("color",
+              c(all_of(input$plsc_color)), remove = FALSE, sep = "; ") %>%
         ggplot(aes_string(x = "sample_percentage", y = "matched_percentage",
-                          group= "label",
-                          fill = "label",
-                          color = "label"
+                          color = "color",
+                          label7 = "difference_percentage",
+                          label2 = "cdm_name",
+                          label3 = "cohort_name",
+                          label4 = "table_name",
+                          label5 = "concept_name",
+                          label6 = "window"
         )) +
         geom_point() +
         geom_abline(intercept = 0, slope = 1) +
         facet_wrap(vars(facet_var),nrow = 2) +
         theme_bw() +
         theme(legend.position = "none")
-    } else{
+    } else if (is.null(input$plsc_facet_by) & is.null(input$plsc_color)) {
       p <- table %>%
         ggplot(aes_string(x = "sample_percentage", y = "matched_percentage",
-                          group= "label",
-                          fill = "label",
-                          color = "label")) +
+                          label7 = "difference_percentage",
+                          label2 = "cdm_name",
+                          label3 = "cohort_name",
+                          label4 = "table_name",
+                          label5 = "concept_name",
+                          label6 = "window")) +
         geom_point() +
         geom_abline(intercept = 0, slope = 1) +
+        theme_bw() +
+        theme(legend.position = "none")
+    } else if (is.null(input$plsc_facet_by) & !is.null(input$plsc_color)) {
+      p <- table %>%
+        unite("color",
+              c(all_of(input$plsc_color)), remove = FALSE, sep = "; ") %>%
+        ggplot(aes_string(x = "sample_percentage", y = "matched_percentage",
+                          color = "color",
+                          label2 = "cdm_name",
+                          label3 = "cohort_name",
+                          label4 = "table_name",
+                          label5 = "concept_name",
+                          label6 = "window",
+                          label7 = "difference_percentage")) +
+        geom_point() +
+        geom_abline(intercept = 0, slope = 1) +
+        theme_bw() +
+        theme(legend.position = "none")
+    } else if (!is.null(input$plsc_facet_by) & is.null(input$plsc_color)) {
+      p <- table %>%
+        unite("facet_by",
+              c(all_of(input$plsc_facet_by)), remove = FALSE, sep = "; ") %>%
+        ggplot(aes_string(x = "sample_percentage", y = "matched_percentage",
+                          label7 = "difference_percentage",
+                          label2 = "cdm_name",
+                          label3 = "cohort_name",
+                          label4 = "table_name",
+                          label5 = "concept_name",
+                          label6 = "window")) +
+        geom_point() +
+        geom_abline(intercept = 0, slope = 1) +
+        facet_wrap(vars(facet_var),nrow = 2) +
         theme_bw() +
         theme(legend.position = "none")
     }
