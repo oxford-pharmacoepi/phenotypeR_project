@@ -51,8 +51,8 @@ options(error = quote(dump.frames("testdump", TRUE, TRUE)))
 tic(msg = "Settings and loading of Phoebe")
 
 
-cohort_json_dir <- here("Cohorts/newHPV")
-cohorts_name <- "hpv_"
+cohort_json_dir <- here("Cohorts/")
+cohorts_name <- "phenotyping_paper_"
 prefix <- "apu"
  cdm_schema <- "public"
 # cdm_schema <- "public_100k"
@@ -61,20 +61,23 @@ results_schema <- "results"
 # Input 
 input <- list(
   runGenerateCohort = T,              #### Generate cohort or use preloaded cohorts
-  runCalculateOverlap = F,            #### Calculate Overlap
+  runCalculateOverlap = T,            #### Calculate Overlap
   runCountCodes = T,                  #### run orphan codes and count codes
-  runIndexEvents = F,                 #### run index events
-  runProfiling = F,                   #### run age and time in database characterisation
-  runMatchedSampleLSC = F,            #### run matched LSC
-  runIncidence = F,                   #### run Incidence
-  runPrevalence = F,                  #### run Prevalence
+  runIndexEvents = T,                 #### run index events
+  runProfiling = T,                   #### run age and time in database characterisation
+  runMatchedSampleLSC = T,            #### run matched LSC
+  runIncidence = T,                   #### run Incidence
+  runPrevalence = T,                  #### run Prevalence
   sampleIncidencePrevalence = 1000000, #### Sample for Incidence Prevalence (NULL if all cdm)
-  cdmName = "CPRDgold"
+  cdmName = "UK_Biobank"
 )
 
 # Database details
+
 #server_dbi <- Sys.getenv("DB_SERVER_DBI_Pharmetrics") 
-server_dbi <- Sys.getenv("DB_SERVER_DBI_CPRDgold") 
+#server_dbi <- Sys.getenv("DB_SERVER_DBI_CPRDgold") 
+server_dbi <- "cdm_ukbiobank_202003"
+
 user <- Sys.getenv("DB_USER") 
 port <- Sys.getenv("DB_PORT") 
 host <- Sys.getenv("DB_HOST")
@@ -90,9 +93,19 @@ output <- data <- vector("list", length(result_names)) |> setNames(result_names)
 
 
 
-if (input$runCountCodes){
+if (input$runCountCodes & !file.exists(here("Phoebe/concept_recommended.csv")) ){
+  if (file.exists(here("Phoebe/concept_recommended_20221006 1.zip"))){
+    unzip(zipfile=here("Phoebe/concept_recommended_20221006 1.zip"), exdir=here("Phoebe/") )
+  } else { 
+    input$runCountCodes <- F 
+  }
+}
+
+
+if (input$runCountCodes){ 
   concept_recommended <- read.csv(here("Phoebe/concept_recommended.csv"))
 }
+
 
 
 toc(log = TRUE)
