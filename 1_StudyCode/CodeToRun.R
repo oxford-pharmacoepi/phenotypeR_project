@@ -11,6 +11,7 @@ library(DrugUtilisation)
 library(IncidencePrevalence)
 library(tictoc)
 library(readr)
+library(stringr)
 
 # database metadata and connection details -----
 # The name/ acronym for the database

@@ -18,9 +18,7 @@ tic.clearlog()
 tic.clear()
 tic(msg = "phenotypeR total time run: ")
 
-# Options and set-up:  directories and settings ------
-options(error = quote(dump.frames("testdump", TRUE, TRUE)))
-
+# Options and set-up: directories and settings ------
 tic(msg = "Settings and loading of Phoebe")
 
 cohort_json_dir <- here("Cohorts/")
@@ -508,4 +506,20 @@ write_csv(output$log, here("results", paste0(
   "log_", cdmName(cdm), "_" ,format(Sys.time(), "_%Y_%m_%d"), ".csv"
 )))
 
+
+
+# zip results -----
+# zip all results -----
+cli::cli_text("- Zipping results ({Sys.time()})")
+files_to_zip <- list.files(here("results"))
+files_to_zip <- files_to_zip[str_detect(files_to_zip,
+                                        db_name)]
+files_to_zip <- files_to_zip[str_detect(files_to_zip,
+                                        ".csv")]
+
+zip::zip(zipfile = file.path(paste0(
+  here("results"), "/results_", db_name, ".zip"
+)),
+files = files_to_zip,
+root = here("results"))
 
