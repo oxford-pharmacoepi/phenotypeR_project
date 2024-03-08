@@ -15,3 +15,5 @@ renv.lock
 *.json
 Cohorts/newHPV/Phoebe_rec.csv
 *.dcf
+1_StudyCode/Phoebe/concept_recommended.csv
+1_StudyCode/Results/*.csv
