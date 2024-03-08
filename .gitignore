@@ -4,7 +4,6 @@
 .Ruserdata
 *.RData
 /Results/*.RData
-/Cohorts/*.json
 /Cohorts/*.zip
 /Cohorts/*.csv
 /Phoebe/*.csv
@@ -12,7 +11,6 @@
 .gitignore
 renv.lock
 *.rda
-*.json
 Cohorts/newHPV/Phoebe_rec.csv
 *.dcf
 1_StudyCode/Phoebe/concept_recommended.csv
