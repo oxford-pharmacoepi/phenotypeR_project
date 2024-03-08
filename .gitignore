@@ -15,3 +15,10 @@ renv.lock
 *.json
 Cohorts/newHPV/Phoebe_rec.csv
 *.dcf
+1_StudyCode/Phoebe/concept_recommended.csv
+1_StudyCode/Results/*.csv
+1_StudyCode/Results/*.zip
+2_Reporting/data/results_CPRD GOLD 100k/*.csv
+renv/library/R-4.2/x86_64-w64-mingw32/renv/bin/renv
+Results/*.csv
+Results/results_CPRD GOLD 100k.zip
