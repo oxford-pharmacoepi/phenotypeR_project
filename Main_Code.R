@@ -52,7 +52,7 @@ tic(msg = "Settings and loading of Phoebe")
 
 
 cohort_json_dir <- here("Cohorts/")
-cohorts_name <- "phenotyping_paper_"
+cohorts_name <- "pso_arth_"
 prefix <- "apu"
  cdm_schema <- "public"
 # cdm_schema <- "public_100k"
@@ -69,14 +69,17 @@ input <- list(
   runIncidence = T,                   #### run Incidence
   runPrevalence = T,                  #### run Prevalence
   sampleIncidencePrevalence = 1000000, #### Sample for Incidence Prevalence (NULL if all cdm)
-  cdmName = "UK_Biobank"
+  cdmName = "CPRDGold"
 )
 
 # Database details
 
 #server_dbi <- Sys.getenv("DB_SERVER_DBI_Pharmetrics") 
-#server_dbi <- Sys.getenv("DB_SERVER_DBI_CPRDgold") 
-server_dbi <- "cdm_ukbiobank_202003"
+server_dbi <- Sys.getenv("DB_SERVER_DBI_CPRDgold") 
+#server_dbi <- "cdm_iqvia_pharmetrics_plus_202203"
+#server_dbi <- "cdm_thin_be_202308"
+
+
 
 user <- Sys.getenv("DB_USER") 
 port <- Sys.getenv("DB_PORT") 
@@ -197,7 +200,8 @@ summary_intersections <- cdm[[cohorts_name]] %>%
   collect()
 
 output$cohort_overlap <- summary_intersections %>% 
-  mutate(cdm_name = input$cdmName)
+  mutate(cdm_name = input$cdmName) |> 
+  mutate(intersect_count = if_else(intersect_count > 0 & intersect_count < 5, NA, intersect_count))
 }
 toc(log = TRUE)
 
@@ -324,7 +328,7 @@ if (input$runProfiling) {
   
   rm(Patient_profiles)
   
-  output$age_distribution <- Age_distribution %>% mutate(cdm_name = input$cdmName)
+  output$age_distribution <- Age_distribution %>% mutate(cdm_name = input$cdmName)  |> mutate(n = if_else(n > 0 & n < 5, NA, n))
   output$time_distribution <- Time_distribution %>% mutate(cdm_name = input$cdmName)
 }
 
@@ -410,8 +414,8 @@ if (input$runMatchedSampleLSC) {
     #includeSource = TRUE,
     minCellCount = 5,
     minimumFrequency = 0.0005
-  )
-  output$lsc_matched <- large_scale_char_matched %>% mutate(cdm_name = input$cdmName)
+  ) |> PatientProfiles::suppressCounts()
+  output$lsc_matched <- large_scale_char_matched %>% mutate(cdm_name = input$cdmName) |> PatientProfiles::suppressCounts()
 }
 toc(log = TRUE)
 
@@ -429,7 +433,7 @@ if (input$runMatchedSampleLSC) {
     minCellCount = 5,
     minimumFrequency = 0.0005
   )
-  output$lsc_sample <- large_scale_char_sample %>% mutate(cdm_name = input$cdmName)
+  output$lsc_sample <- large_scale_char_sample %>% mutate(cdm_name = input$cdmName) |> PatientProfiles::suppressCounts()
 }
 toc(log = TRUE)
 
@@ -493,7 +497,7 @@ if (input$runIncidence ) {
     repeatedEvents = FALSE,
     outcomeWashout = Inf,
     completeDatabaseIntervals = FALSE,
-    minCellCount = 0 )
+    minCellCount = 0 ) |> IncidencePrevalence:::obscureCounts()
   
 }
 
@@ -556,6 +560,10 @@ analyses_performed <- as.integer(c(input$runGenerateCohort,
 ))
 
 analyses_performed <-  paste(analyses_performed , collapse = "_")
+
+
+
+
 ##### Save results ############
 save(input, output, 
      file = here(paste0("Results/", input$cdmName, "_", cohorts_name,"_", analyses_performed, "_" ,format(Sys.time(), "_%Y_%m_%d") , ".RData")))
