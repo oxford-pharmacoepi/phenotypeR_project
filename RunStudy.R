@@ -136,13 +136,19 @@ summary_intersections <- cdm[[cohorts_name]] %>%
   distinct()  %>%
   group_by(cohort_definition_id_x, cohort_definition_id_y) %>%
   summarize(intersect_count = n()) %>% 
-  collect()
+  collect() 
+
 
 output$cohort_overlap <- summary_intersections %>% 
-  mutate(cdm_name = input$cdmName)
-write_csv(output$cohort_overlap, here("results", paste0(
+  mutate(cdm_name = input$cdmName) 
+output$cohort_overlap <- tryCatch({ 
+  output$cohort_overlap%>% 
+  mutate(intersect_count = if_else(intersect_count > 0 & intersect_count < 5, NA, intersect_count))
+}, error = function(e) {})
+
+tryCatch({  write_csv(output$cohort_overlap, here("results", paste0(
   "cohort_overlap_", cdmName(cdm), "_" ,format(Sys.time(), "_%Y_%m_%d"), ".csv"
-)))
+))) }, error = function(e) {})
 }
 toc(log = TRUE)
 
@@ -268,7 +274,7 @@ if (input$runProfiling) {
   
   
   
-  Age_distribution <- Patient_profiles %>% group_by(cohort_definition_id, age_group, sex) %>% tally()
+  Age_distribution <- Patient_profiles %>% group_by(cohort_definition_id, age_group, sex) %>% tally() 
   
   
   Time_distribution <- Patient_profiles %>%
@@ -278,7 +284,7 @@ if (input$runProfiling) {
   
   rm(Patient_profiles)
   
-  output$age_distribution <- Age_distribution %>% mutate(cdm_name = input$cdmName)
+  output$age_distribution <- Age_distribution %>% mutate(cdm_name = input$cdmName) |> mutate(n = if_else(n > 0 & n < 5, NA, n))
   write_csv(output$age_distribution, here("results", paste0(
     "age_distribution_", cdmName(cdm), "_" ,format(Sys.time(), "_%Y_%m_%d"), ".csv"
   )))
@@ -462,8 +468,8 @@ if (input$runIncidence ) {
     repeatedEvents = FALSE,
     outcomeWashout = Inf,
     completeDatabaseIntervals = FALSE,
-    minCellCount = 0 )
-  write_csv(output$incidence, here("results", paste0(
+    minCellCount = 0 ) 
+  write_csv(output$incidence |> IncidencePrevalence:::obscureCounts(), here("results", paste0(
     "incidence_", cdmName(cdm), "_" ,format(Sys.time(), "_%Y_%m_%d"), ".csv"
   )))
   
@@ -518,7 +524,7 @@ files_to_zip <- files_to_zip[str_detect(files_to_zip,
                                         ".csv")]
 
 zip::zip(zipfile = file.path(paste0(
-  here("results"), "/results_", db_name, ".zip"
+  here("results"), "/results_", study_prefix,"_", db_name, ".zip"
 )),
 files = files_to_zip,
 root = here("results"))

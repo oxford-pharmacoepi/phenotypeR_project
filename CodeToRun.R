@@ -36,7 +36,7 @@ achilles_schema <- "results"
 # we provide the default here but you can change it
 # note, any existing tables in your write schema starting with this prefix may
 # be dropped during running this analysis
-study_prefix <- "phenotyper_"
+study_prefix <- "apu_"
 
 # Run the study ------
 source(here("RunStudy.R"))
