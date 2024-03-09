@@ -18,7 +18,7 @@ library(SqlRender)
 
 # database metadata and connection details -----
 # The name/ acronym for the database
-db_name <- "CPRD GOLD 100k"
+db_name <- "CPRD GOLD"
 
 # Database connection details -----
 db <- dbConnect(RPostgres::Postgres(),
@@ -27,7 +27,7 @@ db <- dbConnect(RPostgres::Postgres(),
                 host = Sys.getenv("DB_HOST"),
                 user = Sys.getenv("DB_USER"),
                 password =  Sys.getenv("DB_PASSWORD"))
-cdm_schema <- "public_100k"
+cdm_schema <- "public"
 write_schema <- "results"
 achilles_schema <- "results"
 
