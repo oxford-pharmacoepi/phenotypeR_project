@@ -9,7 +9,8 @@ input <- list(
   runIncidence = T,                   #### run Incidence
   runPrevalence = T,                  #### run Prevalence
   sampleIncidencePrevalence = 1000000, #### Sample for Incidence Prevalence (NULL if all cdm)
-  cdmName = db_name
+  cdmName = db_name,
+  exportResultsRData=T
 )
 
 # Log start ------
@@ -528,4 +529,23 @@ zip::zip(zipfile = file.path(paste0(
 )),
 files = files_to_zip,
 root = here("results"))
+
+if (input$exportResultsRData) {
+  analyses_performed <- as.integer(c(input$runGenerateCohort, 
+                                     input$runCalculateOverlap,
+                                     input$runCountCodes,
+                                     input$runIndexEvents,
+                                     input$runProfiling, 
+                                     input$runMatchedSampleLSC, 
+                                     input$runIncidence, 
+                                     input$runPrevalence, 
+                                     !is.null(input$sampleIncidencePrevalence)
+  ))
+  
+  analyses_performed <-  paste(analyses_performed , collapse = "_")
+  
+  save(input, output, 
+       file = here(paste0("Results/", input$cdmName, "_", cohorts_name,"_", analyses_performed, "_" ,format(Sys.time(), "_%Y_%m_%d") , ".RData")))
+}
+
 
