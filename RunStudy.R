@@ -79,7 +79,7 @@ toc(log = TRUE)
 # Get cdm snapshot -----
 tic(msg = "Getting cdm snapshot")
 cdm_snapshot <- snapshot(cdm)
-write_csv(cdm_snapshot, here("results", paste0(
+write_csv(cdm_snapshot, here("Results", paste0(
   "cdm_snapshot_", cdmName(cdm), "_" ,format(Sys.time(), "_%Y_%m_%d"), ".csv"
 )))
 toc(log = TRUE)
@@ -109,7 +109,7 @@ tic(msg = "Cohort counts, attrition")
 output$cohort_count <- cohort_count(cdm[[cohorts_name]]) %>% 
   left_join(settings(cdm[[cohorts_name]])) %>% 
   mutate(cdm_name = input$cdmName)
-write_csv(output$cohort_count, here("results", paste0(
+write_csv(output$cohort_count, here("Results", paste0(
   "cohort_count_", cdmName(cdm), "_" ,format(Sys.time(), "_%Y_%m_%d"), ".csv"
 )))
 
@@ -147,7 +147,7 @@ output$cohort_overlap <- tryCatch({
   mutate(intersect_count = if_else(intersect_count > 0 & intersect_count < 5, NA, intersect_count))
 }, error = function(e) {})
 
-tryCatch({  write_csv(output$cohort_overlap, here("results", paste0(
+tryCatch({  write_csv(output$cohort_overlap, here("Results", paste0(
   "cohort_overlap_", cdmName(cdm), "_" ,format(Sys.time(), "_%Y_%m_%d"), ".csv"
 ))) }, error = function(e) {})
 }
@@ -244,17 +244,17 @@ for (n in  row_number(cohort_set_res) ) {
   
 } 
 
-# save results
+# save Results
 output$code_counts  <- code_counts %>% mutate(cdm_name = input$cdmName)
-write_csv(output$code_counts, here("results", paste0(
+write_csv(output$code_counts, here("Results", paste0(
   "code_counts_", cdmName(cdm), "_" ,format(Sys.time(), "_%Y_%m_%d"), ".csv"
 )))
 output$index_events <- index_events %>% mutate(cdm_name = input$cdmName)
-write_csv(output$index_events, here("results", paste0(
+write_csv(output$index_events, here("Results", paste0(
   "index_events_", cdmName(cdm), "_" ,format(Sys.time(), "_%Y_%m_%d"), ".csv"
 )))
 output$cohort_definitions <- cohort_set_res %>% mutate(cdm_name = input$cdmName)
-write_csv(output$cohort_definitions, here("results", paste0(
+write_csv(output$cohort_definitions, here("Results", paste0(
   "cohort_definitions_", cdmName(cdm), "_" ,format(Sys.time(), "_%Y_%m_%d"), ".csv"
 )))
 
@@ -266,7 +266,7 @@ toc(log = TRUE)
 # Need to add better characterisation of demographics (a sort of table 1)
 
 tic(msg = "Patient_profiles summary")
-#cdm$results_dx <- cdm[[cohorts_name]]
+#cdm$Results_dx <- cdm[[cohorts_name]]
 if (input$runProfiling) {
   Patient_profiles <- cdm[[cohorts_name]] %>%
     addDemographics(cdm) %>% 
@@ -286,11 +286,11 @@ if (input$runProfiling) {
   rm(Patient_profiles)
   
   output$age_distribution <- Age_distribution %>% mutate(cdm_name = input$cdmName) |> mutate(n = if_else(n > 0 & n < 5, NA, n))
-  write_csv(output$age_distribution, here("results", paste0(
+  write_csv(output$age_distribution, here("Results", paste0(
     "age_distribution_", cdmName(cdm), "_" ,format(Sys.time(), "_%Y_%m_%d"), ".csv"
   )))
   output$time_distribution <- Time_distribution %>% mutate(cdm_name = input$cdmName)
-  write_csv(output$time_distribution, here("results", paste0(
+  write_csv(output$time_distribution, here("Results", paste0(
     "time_distribution_", cdmName(cdm), "_" ,format(Sys.time(), "_%Y_%m_%d"), ".csv"
   )))
 }
@@ -350,11 +350,11 @@ if (input$runMatchedSampleLSC) {
  
  # 
  # con <- attr(cdm, "dbcon")
- # DBI::dbWriteTable(con, matched_cohort, overwrite = TRUE, name=Id(schema = "results",table=paste0(prefix,"matched_cohort_test")))
- # cohort_ref <- dplyr::tbl(con, Id(schema = "results",table=paste0(prefix,"matched_cohort_test")))
+ # DBI::dbWriteTable(con, matched_cohort, overwrite = TRUE, name=Id(schema = "Results",table=paste0(prefix,"matched_cohort_test")))
+ # cohort_ref <- dplyr::tbl(con, Id(schema = "Results",table=paste0(prefix,"matched_cohort_test")))
  # 
- # DBI::dbWriteTable(con, settings(cdm$sample) , overwrite = TRUE, name=Id(schema = "results",table=paste0(prefix,"matched_cohort_test_set")))
- # cohort_set_ref <- dplyr::tbl(con, Id(schema = "results",table=paste0(prefix,"matched_cohort_test_set")))
+ # DBI::dbWriteTable(con, settings(cdm$sample) , overwrite = TRUE, name=Id(schema = "Results",table=paste0(prefix,"matched_cohort_test_set")))
+ # cohort_set_ref <- dplyr::tbl(con, Id(schema = "Results",table=paste0(prefix,"matched_cohort_test_set")))
  # 
  # 
  # cdm[["matched_cohort"]] <- cohort_ref %>% compute()  
@@ -379,7 +379,7 @@ if (input$runMatchedSampleLSC) {
     minimumFrequency = 0.0005
   )
   output$lsc_matched <- large_scale_char_matched %>% mutate(cdm_name = input$cdmName)
-  write_csv(output$lsc_matched, here("results", paste0(
+  write_csv(output$lsc_matched, here("Results", paste0(
     "lsc_matched_", cdmName(cdm), "_" ,format(Sys.time(), "_%Y_%m_%d"), ".csv"
   )))
 }
@@ -400,7 +400,7 @@ if (input$runMatchedSampleLSC) {
     minimumFrequency = 0.0005
   )
   output$lsc_sample <- large_scale_char_sample %>% mutate(cdm_name = input$cdmName)
-  write_csv(output$lsc_sample, here("results", paste0(
+  write_csv(output$lsc_sample, here("Results", paste0(
     "lsc_sample_", cdmName(cdm), "_" ,format(Sys.time(), "_%Y_%m_%d"), ".csv"
   )))
 }
@@ -425,7 +425,7 @@ if (input$runMatchedSampleLSC) {
   # rm(matched_cohort)
   
   output$lsc_difference <- difference %>% mutate(cdm_name = input$cdmName)
-  write_csv(output$lsc_difference, here("results", paste0(
+  write_csv(output$lsc_difference, here("Results", paste0(
     "lsc_difference_", cdmName(cdm), "_" ,format(Sys.time(), "_%Y_%m_%d"), ".csv"
   )))
 }
@@ -470,7 +470,7 @@ if (input$runIncidence ) {
     outcomeWashout = Inf,
     completeDatabaseIntervals = FALSE,
     minCellCount = 0 ) 
-  write_csv(output$incidence |> IncidencePrevalence:::obscureCounts(), here("results", paste0(
+  write_csv(output$incidence |> IncidencePrevalence:::obscureCounts(), here("Results", paste0(
     "incidence_", cdmName(cdm), "_" ,format(Sys.time(), "_%Y_%m_%d"), ".csv"
   )))
   
@@ -491,7 +491,7 @@ if (input$runPrevalence ) {
     fullContribution = FALSE,
     minCellCount = 5
   )
-  write_csv(output$prevalence, here("results", paste0(
+  write_csv(output$prevalence, here("Results", paste0(
     "prevalence_", cdmName(cdm), "_" ,format(Sys.time(), "_%Y_%m_%d"), ".csv"
   )))
 }
@@ -509,26 +509,26 @@ tic.log(format = TRUE)
 tic_log <- tic.log(format = TRUE)
 
 output$log <- tibble(cdm_name = input$cdmName, log = paste0(tic_log %>%  unlist(), collapse = "\n"))
-write_csv(output$log, here("results", paste0(
+write_csv(output$log, here("Results", paste0(
   "log_", cdmName(cdm), "_" ,format(Sys.time(), "_%Y_%m_%d"), ".csv"
 )))
 
 
 
-# zip results -----
-# zip all results -----
-cli::cli_text("- Zipping results ({Sys.time()})")
-files_to_zip <- list.files(here("results"))
+# zip Results -----
+# zip all Results -----
+cli::cli_text("- Zipping Results ({Sys.time()})")
+files_to_zip <- list.files(here("Results"))
 files_to_zip <- files_to_zip[str_detect(files_to_zip,
                                         db_name)]
 files_to_zip <- files_to_zip[str_detect(files_to_zip,
                                         ".csv")]
 
 zip::zip(zipfile = file.path(paste0(
-  here("results"), "/results_", study_prefix,"_", db_name, ".zip"
+  here("Results"), "/Results_", study_prefix,"_", db_name, ".zip"
 )),
 files = files_to_zip,
-root = here("results"))
+root = here("Results"))
 
 if (input$exportResultsRData) {
   analyses_performed <- as.integer(c(input$runGenerateCohort, 

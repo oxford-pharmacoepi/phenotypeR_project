@@ -9,7 +9,7 @@
 /Phoebe/*.csv
 /Old/*
 .gitignore
-results/*
+Results/*
 *.rda
 Cohorts/newHPV/Phoebe_rec.csv
 *.dcf
