@@ -6,7 +6,7 @@ tic(msg = "phenotypeR total time run: ")
 # Set-up: directories and settings ------
 tic(msg = "Settings and loading of Phoebe")
 # To export output 
-result_names <- c("cohort_definitions", "cohort_details", "code_counts", "cohort_overlap", 
+result_names <- c("cohort_definitions", "cohort_details", "code_counts", "cohort_overlap", "cohort_timing",
                   "characteristics", "prevalence", "incidence", "snapshot", "orphan_codes", 
                   "index_events", "lsc_sample", "lsc_matched", "lsc_difference", "log")
 output <- data <- vector("list", length(result_names)) |> setNames(result_names)
@@ -87,6 +87,14 @@ if (runCalculateOverlap) {
   tic(msg = "Calculate Overlap")
   cli::cli_bullets(c("*" = "Summarising cohort overlap"))
   output$cohort_overlap <- summariseCohortOverlap(cdm[[cohort_table]])
+  toc(log = TRUE)
+}
+
+# Cohort timing ----
+if (runCohortTiming) {
+  tic(msg = "Calculate cohort timings")
+  cli::cli_bullets(c("*" = "Summarising cohort timing"))
+  output$cohort_timing <- summariseCohortTiming(cdm[[cohort_table]], density = TRUE)
   toc(log = TRUE)
 }
 
@@ -361,7 +369,7 @@ if (!dir.exists(output_folder)) {
 
 # csv 
 summarised_results <- c("cohort_details", "code_counts", "cohort_overlap", "characteristics",
-                        "lsc_sample", "lsc_matched", "lsc_difference", "snapshot")
+                        "lsc_sample", "lsc_matched", "lsc_difference", "snapshot", "cohort_timing")
 # summarised results
 output[summarised_results] |> bind_rows() |>
   write_csv(file = here(output_folder, "summarised_phenotypeR_results.csv"))

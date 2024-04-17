@@ -57,7 +57,8 @@ cohort_table <- "..."
 # dropCohortTable: If TRUE cohorts will be dropped afterwards.
 
 runGenerateCohort <- TRUE 
-runCalculateOverlap <- TRUE       
+runCalculateOverlap <- TRUE 
+runCohortTiming <- TRUE
 runCountCodes <- TRUE                
 runIndexEvents <- TRUE                 
 runProfiling <- TRUE                   
