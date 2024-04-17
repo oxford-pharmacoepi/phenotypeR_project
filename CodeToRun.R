@@ -25,11 +25,11 @@ db_name <- "..."
 
 # Database connection details -----
 db <- dbConnect(RPostgres::Postgres(),
-                dbname = Sys.getenv("..."), 
-                port = Sys.getenv("..."),
-                host = Sys.getenv("..."),
-                user = Sys.getenv("..."),
-                password =  Sys.getenv("..."))
+                dbname = Sys.getenv("DB_SERVER_DBI"), 
+                port = Sys.getenv("DB_PORT"),
+                host = Sys.getenv("DB_HOST"),
+                user = Sys.getenv("DB_USER"),
+                password =  Sys.getenv("DB_PASSWORD"))
 cdm_schema <- "..."
 write_schema <- "..."
 achilles_schema <- "..."
@@ -54,6 +54,7 @@ cohort_table <- "..."
 # runIncidence: run Incidence
 # runPrevalence: run Prevalence
 # sampleIncidencePrevalence: Sample for Incidence Prevalence (NULL if all cdm)
+# dropCohortTable: If TRUE cohorts will be dropped afterwards.
 
 runGenerateCohort <- TRUE 
 runCalculateOverlap <- TRUE       
@@ -65,6 +66,7 @@ runIncidence <- TRUE
 runPrevalence <- TRUE               
 sampleIncidencePrevalence <- 1000000 
 exportResultsRData <- TRUE 
+dropCohortTable <- TRUE
 
 # zip file containing the csv with recommended codes
 zipFileName <- "concept_recommended_20221006.zip"

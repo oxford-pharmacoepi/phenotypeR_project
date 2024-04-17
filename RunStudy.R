@@ -12,7 +12,7 @@ result_names <- c("cohort_definitions", "cohort_details", "code_counts", "cohort
 output <- data <- vector("list", length(result_names)) |> setNames(result_names)
 
 # Concept recommended
-if (runCountCodes & !file.exists(here("Phoebe", "concept_recommended.csv")) ){
+if (runCountCodes){
   if (file.exists(here("Phoebe", zipFileName))) {
     unzip(zipfile = here("Phoebe", zipFileName), exdir = here("Phoebe"))
     concept_recommended <- read_csv(here("Phoebe", "concept_recommended.csv"),
@@ -35,7 +35,7 @@ toc(log = TRUE)
 # Database connexion ----
 tic(msg = "Connect to database")
 if (runGenerateCohort) {
-  cli::cli_bullets(c(">" = "Connecting to database"))
+  cli::cli_bullets(c("*" = "Connecting to database"))
   cdm <- cdm_from_con(con = db,
                       cdm_schema = c(schema = cdm_schema),
                       write_schema = c(schema= write_schema, prefix = study_prefix),
@@ -43,7 +43,7 @@ if (runGenerateCohort) {
                       cdm_name = db_name
   )
 } else {
-  cli::cli_bullets(c(">" = "Connecting to database and loading cohorts"))
+  cli::cli_bullets(c("*" = "Connecting to database and loading cohorts"))
   cdm <- cdm_from_con(
     con = db,
     cdm_schema = c(schema = cdm_schema),
@@ -65,7 +65,7 @@ toc(log = TRUE)
 
 if (runGenerateCohort) {
   tic(msg = "Generate Cohort Set")
-  cli::cli_bullets(c(">" = "Instantiating cohorts"))
+  cli::cli_bullets(c("*" = "Instantiating cohorts"))
   cdm <-   generateCohortSet(cdm, 
                              jsons,
                              name = cohort_table,
@@ -85,7 +85,7 @@ toc(log = TRUE)
 # Cohort Overlap ----
 if (runCalculateOverlap) {
   tic(msg = "Calculate Overlap")
-  cli::cli_bullets(c(">" = "Summarising cohort overlap"))
+  cli::cli_bullets(c("*" = "Summarising cohort overlap"))
   output$cohort_overlap <- summariseCohortOverlap(cdm[[cohort_table]])
   toc(log = TRUE)
 }
@@ -103,12 +103,12 @@ toc(log = TRUE)
 # Code counts ----
 if(runCountCodes) {
   tic(msg = "Code counts and orphan code counts")
-  cli::cli_bullets(c(">" = "Summarising code counts"))
+  cli::cli_bullets(c("*" = "Summarising code counts"))
   codes <- codesFromCohort(here("Cohorts"), cdm, withConceptDetails = F)
   # original codes
   output$code_counts <- achillesCodeUse(codes, cdm = cdm) 
   # orphan codes
-  cli::cli_bullets(c(">" = "Summarising orphan code counts"))
+  cli::cli_bullets(c("*" = "Summarising orphan code counts"))
   orphanCodelist <- lapply(codes, function(codelist, phoebe = concept_recommended) {
     phoebe |>
       filter(concept_id_1 %in% codelist) |>  
@@ -133,7 +133,7 @@ if(runCountCodes) {
 # Index Event ----
 if (runIndexEvents) {
   tic(msg = "Index Event Breakdown")
-  cli::cli_bullets(c(">" = "Getting index event breakdown"))
+  cli::cli_bullets(c("*" = "Getting index event breakdown"))
   cohortSet <- settings(cdm[[cohort_table]])
   index_events <- list()
   for (id in cohortSet$cohort_definition_id) {
@@ -157,7 +157,7 @@ if (runIndexEvents) {
 # TODO: need to add better characterisation of demographics (a sort of table 1) [adding cohort intersect and few interesting cohorts]
 if (runProfiling) {
   tic(msg = "Patient_profiles summary")
-  cli::cli_bullets(c(">" = "Summarising cohort characteristics"))
+  cli::cli_bullets(c("*" = "Summarising cohort characteristics"))
   output$characteristics <- cdm[[cohort_table]] |>
     addSex() |>
     mutate(time_in_cohort = as.numeric(cohort_end_date - cohort_start_date)) |>
@@ -183,7 +183,7 @@ if (runProfiling) {
 # TODO: use macthCohorts when ready
 if (runMatchedSampleLSC) {
   tic(msg = "Generate 1K Sample and Matched sample")
-  cli::cli_bullets(c(">" = "Generating the match sample"))
+  cli::cli_bullets(c("*" = "Generating the match sample"))
   cdm$sample <- cdm[[cohort_table]]  |> 
     slice_sample(n = 1000, by = cohort_definition_id) |> 
     compute()
@@ -220,7 +220,7 @@ if (runMatchedSampleLSC) {
   toc(log = TRUE)
   
   tic("Large scale characteristics matched")
-  cli::cli_bullets(c(">" = "Summarising large scale characteristics"))
+  cli::cli_bullets(c("*" = "Summarising large scale characteristics"))
   lsc_matched <- summariseLargeScaleCharacteristics(
     cohort = cdm$matched_cohort,
     window = list(c(-Inf, -366), c(-365, -31), c(-30, -1), c(0, 0), 
@@ -245,7 +245,7 @@ if (runMatchedSampleLSC) {
   toc(log = TRUE)
   
   tic("Large scale characteristics differences")
-  cli::cli_bullets(c(">" = "Summarising large scale differences"))
+  cli::cli_bullets(c("*" = "Summarising large scale differences"))
   output$lsc_difference <- lsc_matched |>
     splitGroup() |>
     rename("cohort_name_reference" = "cohort_name") |> 
@@ -312,7 +312,7 @@ if (runIncidence | runPrevalence) {
 
 if (runIncidence ) {
   tic(msg = "Incidence by year, age, sex")
-  cli::cli_bullets(c(">" = "Estimating incidence"))
+  cli::cli_bullets(c("*" = "Estimating incidence"))
   output$incidence <- estimateIncidence(
     cdm = cdmSampled,
     denominatorTable = "denominator",
@@ -328,7 +328,7 @@ if (runIncidence ) {
 
 if (runPrevalence ) {
   tic(msg = "Prevalence by year, age, sex")
-  cli::cli_bullets(c(">" = "Estimating prevalence"))
+  cli::cli_bullets(c("*" = "Estimating prevalence"))
   output$prevalence <- estimatePeriodPrevalence(
     cdm = cdmSampled,
     denominatorTable = "denominator",
@@ -341,15 +341,24 @@ if (runPrevalence ) {
   toc(log = TRUE)
 }
 
+if (dropCohortTable) {
+  tic(msg = "Drop tables")
+  cli::cli_bullets(c("*" = "Dropping tables"))
+  cdm <- dropTable(cdm, starts_with(cohort_table))
+  toc(log = TRUE)
+}
+
 # Log close ----
-toc(log = TRUE)
-tic.log(format = TRUE)
 tic_log <- tic.log(format = TRUE)
 output$log <- tibble(cdm_name = cdmName(cdm), 
                      log = paste0(tic_log |>  unlist(), collapse = "\n"))
 
 # Export results ----
-output_folder <- basename(here("ResultsPhenotypeR"))
+output_folder <- basename(here("Results"))
+if (!dir.exists(output_folder)) {
+  dir.create(output_folder)
+}
+
 # csv 
 summarised_results <- c("cohort_details", "code_counts", "cohort_overlap", "characteristics",
                         "lsc_sample", "lsc_matched", "lsc_difference", "snapshot")
@@ -358,7 +367,9 @@ output[summarised_results] |> bind_rows() |>
   write_csv(file = here(output_folder, "summarised_phenotypeR_results.csv"))
 # others
 for (result in names(output[!names(output) %in% summarised_results])) {
-  write_csv(output[[result]], file = here(output_folder, paste0(result, ".csv")))
+  if (!is.null(output[[result]])) {
+    write_csv(output[[result]], file = here(output_folder, paste0(result, ".csv")))
+  }
 }
 # zip 
 zip(
