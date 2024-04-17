@@ -5,7 +5,6 @@ tic(msg = "phenotypeR total time run: ")
 
 # Set-up: directories and settings ------
 tic(msg = "Settings and loading of Phoebe")
-
 # To export output 
 result_names <- c("cohort_definitions", "cohort_details", "code_counts", "cohort_overlap", 
                   "characteristics", "prevalence", "incidence", "snapshot", "orphan_codes", 
@@ -31,7 +30,6 @@ if (runGenerateCohort) {
     cli::cli_abort(c("x" = "There aren't JSON files in the folder 'Cohorts'"))
   }
 }
-
 toc(log = TRUE)
 
 # Database connexion ----
@@ -176,7 +174,7 @@ if (runProfiling) {
   toc(log = TRUE)
 }
 
-# Cohort Characterisation : Large scale + temporal + differneces  & matching ----
+# Large scale ----
 # NEW:  It could include matching cohorts                                     
 # Missing differences between them that can be done in shiny step - Also demographics that can be done in previous steps
 #  We can get also Visit Context here 
@@ -293,9 +291,8 @@ if (runMatchedSampleLSC) {
 }
 
 
-# Incidence Rates ----
+# Incidence and prevalence ----
 # Stratified by Age 10y, Gender, Calendar Year
-# For now stratified by kid-Adult-Older Adult 
 if (runIncidence | runPrevalence) {
   tic(msg = "Incidence Prevalence Sampling + Denominator")
   if (is.null(sampleIncidencePrevalence)) {
@@ -306,7 +303,7 @@ if (runIncidence | runPrevalence) {
   cdmSampled <- generateDenominatorCohortSet(
     cdm = cdmSampled, 
     name = "denominator", 
-    ageGroup = list(c(0,17), c(18,64), c(65,199)),
+    ageGroup =  lapply(as.list(1:length(seq(0, 110, 10))), function(k, x1 = seq(0, 110, 10), x2 = seq(9, 120, 10)) {c(x1[k], x2[k])}),
     sex = c("Male", "Female", "Both"),
     daysPriorObservation = 180
   )
