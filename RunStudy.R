@@ -8,9 +8,8 @@ tic(msg = "Settings and loading of Phoebe")
 
 # To export output 
 result_names <- c("cohort_definitions", "cohort_details", "code_counts", "cohort_overlap", 
-                  "age_distribution", "time_distribution", "prevalence", "incidence", 
-                  "index_events", "lsc_sample", "lsc_matched", "lsc_difference", "log",
-                  "snapshot", "orphan_codes")
+                  "characteristics", "prevalence", "incidence", "snapshot", "orphan_codes", 
+                  "index_events", "lsc_sample", "lsc_matched", "lsc_difference", "log")
 output <- data <- vector("list", length(result_names)) |> setNames(result_names)
 
 # Concept recommended
@@ -38,13 +37,15 @@ toc(log = TRUE)
 # Database connexion ----
 tic(msg = "Connect to database")
 if (runGenerateCohort) {
+  cli::cli_bullets(c(">" = "Connecting to database"))
   cdm <- cdm_from_con(con = db,
                       cdm_schema = c(schema = cdm_schema),
                       write_schema = c(schema= write_schema, prefix = study_prefix),
                       achilles_schema = achilles_schema, 
                       cdm_name = db_name
   )
-} else   {
+} else {
+  cli::cli_bullets(c(">" = "Connecting to database and loading cohorts"))
   cdm <- cdm_from_con(
     con = db,
     cdm_schema = c(schema = cdm_schema),
@@ -66,6 +67,7 @@ toc(log = TRUE)
 
 if (runGenerateCohort) {
   tic(msg = "Generate Cohort Set")
+  cli::cli_bullets(c(">" = "Instantiating cohorts"))
   cdm <-   generateCohortSet(cdm, 
                              jsons,
                              name = cohort_table,
@@ -85,6 +87,7 @@ toc(log = TRUE)
 # Cohort Overlap ----
 if (runCalculateOverlap) {
   tic(msg = "Calculate Overlap")
+  cli::cli_bullets(c(">" = "Summarising cohort overlap"))
   output$cohort_overlap <- summariseCohortOverlap(cdm[[cohort_table]])
   toc(log = TRUE)
 }
@@ -102,10 +105,12 @@ toc(log = TRUE)
 # Code counts ----
 if(runCountCodes) {
   tic(msg = "Code counts and orphan code counts")
+  cli::cli_bullets(c(">" = "Summarising code counts"))
   codes <- codesFromCohort(here("Cohorts"), cdm, withConceptDetails = F)
   # original codes
   output$code_counts <- achillesCodeUse(codes, cdm = cdm) 
   # orphan codes
+  cli::cli_bullets(c(">" = "Summarising orphan code counts"))
   orphanCodelist <- lapply(codes, function(codelist, phoebe = concept_recommended) {
     phoebe |>
       filter(concept_id_1 %in% codelist) |>  
@@ -130,6 +135,7 @@ if(runCountCodes) {
 # Index Event ----
 if (runIndexEvents) {
   tic(msg = "Index Event Breakdown")
+  cli::cli_bullets(c(">" = "Getting index event breakdown"))
   cohortSet <- settings(cdm[[cohort_table]])
   index_events <- list()
   for (id in cohortSet$cohort_definition_id) {
@@ -149,26 +155,24 @@ if (runIndexEvents) {
 }
 
 
-# Step 4: Time Distributions ----
-# observation time (days) after index , observation time (days) prior to index, time (days) between cohort start and end
-# TODO: need to add better characterisation of demographics (a sort of table 1)
+# Demographics distirbution ----
+# TODO: need to add better characterisation of demographics (a sort of table 1) [adding cohort intersect and few interesting cohorts]
 if (runProfiling) {
   tic(msg = "Patient_profiles summary")
-  cohortDem <- cdm[[cohort_table]] |>
-    addDemographics(
-      ageGroup = lapply(as.list(1:length(seq(0, 110, 5))), function(k, x1 = seq(0, 110, 5), x2 = seq(4, 120, 5)) {c(x1[k], x2[k])})
-    ) |>
-    addCohortName() |>
-    mutate(cdm_name := !!cdmName(cdm)) |>
-    compute()
-  output$age_distribution <- cohortDem |>
-    group_by(cdm_name, cohort_name, age_group, sex) |>
-    tally() |>
-    collect()
-  output$time_distribution <- cohortDem |>
-    group_by(cdm_name, cohort_name, sex) |> 
-    summarise_at(vars(age, prior_observation, future_observation), list(Min = min, Mean = mean, Median = median,  Max = max, Sd = sd)) |>
-    collect()
+  cli::cli_bullets(c(">" = "Summarising cohort characteristics"))
+  output$characteristics <- cdm[[cohort_table]] |>
+    addSex() |>
+    mutate(time_in_cohort = as.numeric(cohort_end_date - cohort_start_date)) |>
+    summariseCharacteristics(
+      strata = c("sex"),
+      ageGroup = lapply(as.list(1:length(seq(0, 110, 5))), function(k, x1 = seq(0, 110, 5), x2 = seq(4, 120, 5)) {c(x1[k], x2[k])}),
+      tableIntersect = list(
+        "Number visits prior year" = list(
+          tableName = "visit_occurrence", value = "count", window = c(-365, -1)
+        )
+      ),
+      otherVariables = "time_in_cohort"
+    )
   toc(log = TRUE)
 }
 
@@ -181,6 +185,7 @@ if (runProfiling) {
 # TODO: use macthCohorts when ready
 if (runMatchedSampleLSC) {
   tic(msg = "Generate 1K Sample and Matched sample")
+  cli::cli_bullets(c(">" = "Generating the match sample"))
   cdm$sample <- cdm[[cohort_table]]  |> 
     slice_sample(n = 1000, by = cohort_definition_id) |> 
     compute()
@@ -217,6 +222,7 @@ if (runMatchedSampleLSC) {
   toc(log = TRUE)
   
   tic("Large scale characteristics matched")
+  cli::cli_bullets(c(">" = "Summarising large scale characteristics"))
   lsc_matched <- summariseLargeScaleCharacteristics(
     cohort = cdm$matched_cohort,
     window = list(c(-Inf, -366), c(-365, -31), c(-30, -1), c(0, 0), 
@@ -241,6 +247,7 @@ if (runMatchedSampleLSC) {
   toc(log = TRUE)
   
   tic("Large scale characteristics differences")
+  cli::cli_bullets(c(">" = "Summarising large scale differences"))
   output$lsc_difference <- lsc_matched |>
     splitGroup() |>
     rename("cohort_name_reference" = "cohort_name") |> 
@@ -308,6 +315,7 @@ if (runIncidence | runPrevalence) {
 
 if (runIncidence ) {
   tic(msg = "Incidence by year, age, sex")
+  cli::cli_bullets(c(">" = "Estimating incidence"))
   output$incidence <- estimateIncidence(
     cdm = cdmSampled,
     denominatorTable = "denominator",
@@ -323,6 +331,7 @@ if (runIncidence ) {
 
 if (runPrevalence ) {
   tic(msg = "Prevalence by year, age, sex")
+  cli::cli_bullets(c(">" = "Estimating prevalence"))
   output$prevalence <- estimatePeriodPrevalence(
     cdm = cdmSampled,
     denominatorTable = "denominator",
@@ -335,7 +344,6 @@ if (runPrevalence ) {
   toc(log = TRUE)
 }
 
-
 # Log close ----
 toc(log = TRUE)
 tic.log(format = TRUE)
@@ -343,10 +351,10 @@ tic_log <- tic.log(format = TRUE)
 output$log <- tibble(cdm_name = cdmName(cdm), 
                      log = paste0(tic_log |>  unlist(), collapse = "\n"))
 
-# Export results ---
+# Export results ----
 output_folder <- basename(here("ResultsPhenotypeR"))
 # csv 
-summarised_results <- c("cohort_details", "code_counts", "cohort_overlap",
+summarised_results <- c("cohort_details", "code_counts", "cohort_overlap", "characteristics",
                         "lsc_sample", "lsc_matched", "lsc_difference", "snapshot")
 # summarised results
 output[summarised_results] |> bind_rows() |>
@@ -362,3 +370,4 @@ zip(
   flags = '-r9Xj'
 )
 
+cli::cli_alert_success( "PhenotypeR finished!")
