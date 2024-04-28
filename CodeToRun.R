@@ -8,7 +8,6 @@ library(dplyr)
 library(CodelistGenerator)
 library(PatientProfiles)
 library(here)
-library(DrugUtilisation)
 library(IncidencePrevalence)
 library(tictoc)
 library(readr)
@@ -16,32 +15,33 @@ library(stringr)
 library(testthat)
 library(SqlRender)
 library(CirceR)
-library(visOmopResults)
 library(tidyr)
+library(CohortCharacteristics)
+library(visOmopResults)
 
 # database metadata and connection details -----
 # The name/ acronym for the database
-db_name <- "..."
+db_name <- "CPRD"
 
 # Database connection details -----
 db <- dbConnect(RPostgres::Postgres(),
-                dbname = Sys.getenv("DB_SERVER_DBI"), 
+                dbname = Sys.getenv("DB_SERVER_DBI_gd"), 
                 port = Sys.getenv("DB_PORT"),
                 host = Sys.getenv("DB_HOST"),
                 user = Sys.getenv("DB_USER"),
                 password =  Sys.getenv("DB_PASSWORD"))
-cdm_schema <- "..."
-write_schema <- "..."
-achilles_schema <- "..."
+cdm_schema <- "public_100k"
+write_schema <- "results"
+achilles_schema <- "results"
 
 # Table prefix and name-----
 # any tables created in the database during the analysis will start with this prefix
 # we provide the default here but you can change it
 # note, any existing tables in your write schema starting with this prefix may
 # be dropped during running this analysis
-study_prefix <- "..."
+study_prefix <- "nmb_vax"
 # Name of the table to be created or read (if runGenerateCohort is FALSE)
-cohort_table <- "..."
+cohort_table <- "conditions"
 
 # Settings ----
 # runGenerateCohort: Generate cohort or use preloaded cohorts
@@ -56,7 +56,7 @@ cohort_table <- "..."
 # sampleIncidencePrevalence: Sample for Incidence Prevalence (NULL if all cdm)
 # dropCohortTable: If TRUE cohorts will be dropped afterwards.
 
-runGenerateCohort <- TRUE 
+runGenerateCohort <- FALSE 
 runCalculateOverlap <- TRUE 
 runCohortTiming <- TRUE
 runCountCodes <- TRUE                
@@ -67,7 +67,7 @@ runIncidence <- TRUE
 runPrevalence <- TRUE               
 sampleIncidencePrevalence <- 1000000 
 exportResultsRData <- TRUE 
-dropCohortTable <- TRUE
+dropCohortTable <- FALSE
 
 # zip file containing the csv with recommended codes
 zipFileName <- "concept_recommended_20221006.zip"

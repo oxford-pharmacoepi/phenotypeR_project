@@ -49,7 +49,7 @@ if (runGenerateCohort) {
     cdm_schema = c(schema = cdm_schema),
     write_schema = c(schema= write_schema, prefix = study_prefix),
     achilles_schema = achilles_schema,
-    cohort_tables = cohort_table_name, 
+    cohort_tables = cohort_table, 
     cdm_name = db_name  
   )
   
@@ -58,11 +58,10 @@ toc(log = TRUE)
 
 # Get cdm snapshot -----
 tic(msg = "Getting cdm snapshot")
-output$snapshot <- summary(cdm)
+output$snapshot <- summary(cdm) 
 toc(log = TRUE)
 
-# Step 1: Generate cohorts
-
+# Generate cohorts ----
 if (runGenerateCohort) {
   tic(msg = "Generate Cohort Set")
   cli::cli_bullets(c("*" = "Instantiating cohorts"))
@@ -78,15 +77,14 @@ if (runGenerateCohort) {
 
 # Cohort details ----
 tic(msg = "Cohort details")
-output$cohort_details <- summary(cdm[[cohort_table]])
-
+output$cohort_details <- summary(cdm[[cohort_table]]) 
 toc(log = TRUE)
 
-# Cohort Overlap ----
+# Cohort overlap ----
 if (runCalculateOverlap) {
   tic(msg = "Calculate Overlap")
   cli::cli_bullets(c("*" = "Summarising cohort overlap"))
-  output$cohort_overlap <- summariseCohortOverlap(cdm[[cohort_table]])
+  output$cohort_overlap <- CohortCharacteristics::summariseCohortOverlap(cdm[[cohort_table]])
   toc(log = TRUE)
 }
 
@@ -94,19 +92,21 @@ if (runCalculateOverlap) {
 if (runCohortTiming) {
   tic(msg = "Calculate cohort timings")
   cli::cli_bullets(c("*" = "Summarising cohort timing"))
-  output$cohort_timing <- summariseCohortTiming(cdm[[cohort_table]], density = TRUE)
+  output$cohort_timing <- CohortCharacteristics::summariseCohortTiming(cdm[[cohort_table]], density = TRUE) 
   toc(log = TRUE)
 }
 
 # Cohort definitions ----
-tic(msg = "Markdown readable text")
-output$cohort_definitions <- jsons |>
-  rowwise() |>
-  mutate(
-    markdown = cohortPrintFriendly(cohortExpressionFromJson(.data$json)),
-    cdm_name = cdmName(cdm)
-  )
-toc(log = TRUE)
+if (runGenerateCohort) {
+  tic(msg = "Markdown readable text")
+  output$cohort_definitions <- jsons |>
+    rowwise() |>
+    mutate(
+      markdown = cohortPrintFriendly(cohortExpressionFromJson(.data$json)),
+      cdm_name = cdmName(cdm)
+    )
+  toc(log = TRUE)
+}
 
 # Code counts ----
 if(runCountCodes) {
@@ -169,7 +169,7 @@ if (runProfiling) {
   output$characteristics <- cdm[[cohort_table]] |>
     addSex() |>
     mutate(time_in_cohort = as.numeric(cohort_end_date - cohort_start_date)) |>
-    summariseCharacteristics(
+    CohortCharacteristics::summariseCharacteristics(
       strata = c("sex"),
       ageGroup = lapply(as.list(1:length(seq(0, 110, 5))), function(k, x1 = seq(0, 110, 5), x2 = seq(4, 120, 5)) {c(x1[k], x2[k])}),
       tableIntersect = list(
@@ -229,7 +229,7 @@ if (runMatchedSampleLSC) {
   
   tic("Large scale characteristics matched")
   cli::cli_bullets(c("*" = "Summarising large scale characteristics"))
-  lsc_matched <- summariseLargeScaleCharacteristics(
+  lsc_matched <-  CohortCharacteristics::summariseLargeScaleCharacteristics(
     cohort = cdm$matched_cohort,
     window = list(c(-Inf, -366), c(-365, -31), c(-30, -1), c(0, 0), 
                   c(1, 30), c(31, 365),  c(366, Inf)),
@@ -241,7 +241,7 @@ if (runMatchedSampleLSC) {
   toc(log = TRUE)
   
   tic("Large scale characteristics sample")
-  lsc_sample <- summariseLargeScaleCharacteristics(
+  lsc_sample <- CohortCharacteristics::summariseLargeScaleCharacteristics(
     cohort = cdm$sample,
     window = list(c(-Inf, -366), c(-365, -31), c(-30, -1), c(0, 0), 
                   c(1, 30), c(31, 365),  c(366, Inf)),
@@ -254,26 +254,27 @@ if (runMatchedSampleLSC) {
   
   tic("Large scale characteristics differences")
   cli::cli_bullets(c("*" = "Summarising large scale differences"))
+  # TODO: use summariseSMD when ready
+  # TODO check que es mantinguin els settings
   output$lsc_difference <- lsc_matched |>
-    splitGroup() |>
-    rename("cohort_name_reference" = "cohort_name") |> 
-    pivotSettings() |>
+    select(-"group_name") |>
+    rename("cohort_name_reference" = "group_level") |> 
+    filter(variable_name != "settings") |>
     mutate(estimate_name = paste0(estimate_name, "_reference"),
            estimate_value = as.numeric(estimate_value)) |>
     select(-"estimate_type") |>
     pivot_wider(names_from = estimate_name, values_from = estimate_value) |>
     left_join(
       lsc_sample |>
-        splitGroup() |>
-        rename("cohort_name_comparator" = "cohort_name") |> 
-        pivotSettings() |>
+        select(-"group_name") |>
+        rename("cohort_name_comparator" = "group_level") |> 
+        filter(variable_name != "settings") |>
         mutate(estimate_name = paste0(estimate_name, "_comparator"),
                estimate_value = as.numeric(estimate_value)) |>
         select(-"estimate_type") |>
         pivot_wider(names_from = estimate_name, values_from = estimate_value),
       by = join_by(result_id, cdm_name, result_type, package_name, package_version, strata_name,
-                   strata_level, variable_name, variable_level, additional_name, additional_level,
-                   table_name, type,  analysis),
+                   strata_level, variable_name, variable_level, additional_name, additional_level),
       relationship = "many-to-many"
     ) |>
     mutate(
@@ -286,8 +287,7 @@ if (runMatchedSampleLSC) {
     uniteGroup(cols = c("cohort_name_reference", "cohort_name_comparator")) |>
     pivot_longer(cols = c("smd", "difference"), names_to = "estimate_name", values_to = "estimate_value") |>
     mutate(estimate_type = "numeric") |>
-    select(-starts_with("percentage"), -starts_with("count")) |>
-    appendSettings(colsSettings = c("table_name", "type", "analysis")) 
+    select(-starts_with("percentage"), -starts_with("count")) 
   toc(log = TRUE)
   # to export
   output$lsc_matched <- lsc_matched |>
@@ -368,10 +368,15 @@ if (!dir.exists(output_folder)) {
 }
 
 # csv 
-summarised_results <- c("cohort_details", "code_counts", "cohort_overlap", "characteristics",
+summarised_results <- c("cohort_details", "cohort_overlap", "characteristics",
                         "lsc_sample", "lsc_matched", "lsc_difference", "snapshot", "cohort_timing")
 # summarised results
-output[summarised_results] |> bind_rows() |>
+# TODO use bind_rows when omopgenerics #266
+omopgenerics::bind(
+  output[["cohort_details"]], output[["cohort_overlap"]],
+  output[["characteristics"]], output[["lsc_sample"]], output[["lsc_matched"]],
+  output[["lsc_difference"]], output[["snapshot"]], output[["cohort_timing"]],
+) |>
   write_csv(file = here(output_folder, "summarised_phenotypeR_results.csv"))
 # others
 for (result in names(output[!names(output) %in% summarised_results])) {
