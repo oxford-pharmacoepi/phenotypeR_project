@@ -1,3 +1,4 @@
+# renv::activate()
 # renv::restore()
 
 # packages ----
@@ -39,9 +40,9 @@ achilles_schema <- "results"
 # we provide the default here but you can change it
 # note, any existing tables in your write schema starting with this prefix may
 # be dropped during running this analysis
-study_prefix <- "nmb_vax"
+study_prefix <- "dev_nmb"
 # Name of the table to be created or read (if runGenerateCohort is FALSE)
-cohort_table <- "conditions"
+cohort_table <- "phenotyper"
 
 # Settings ----
 # runGenerateCohort: Generate cohort or use preloaded cohorts
