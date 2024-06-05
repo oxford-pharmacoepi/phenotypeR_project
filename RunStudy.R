@@ -9,7 +9,7 @@ tic(msg = "Project settings and loading of Phoebe")
 # To export output 
 result_names <- c("cohort_definitions", "cohort_details", "code_counts", "cohort_overlap", "cohort_timing",
                   "characteristics", "prevalence", "incidence", "snapshot", "orphan_codes", 
-                  "index_events", "lsc_sample", "lsc_matched", "lsc_difference", "log")
+                  "index_events", "lsc_sample", "lsc_matched", "lsc_difference", "log", "settings")
 
 output <- vector("list", length(result_names)) |> setNames(result_names)
 
@@ -370,6 +370,23 @@ tic_log <- tic.log(format = TRUE)
 output$log <- tibble(cdm_name = cdmName(cdm), 
                      log = paste0(tic_log |>  unlist(), collapse = "\n"))
 
+# phenotypeR settings
+output$settings <- tibble(
+  runGenerateCohort = runGenerateCohort, 
+  runCalculateOverlap = runCalculateOverlap, 
+  runCohortTiming = runCohortTiming,
+  runCountCodes = runCountCodes,                
+  runIndexEvents = runIndexEvents,                 
+  runProfiling = runProfiling,                   
+  runMatchedSampleLSC = runMatchedSampleLSC,         
+  runIncidence = runIncidence,                
+  runPrevalence = runPrevalence,               
+  sampleIncidencePrevalence = sampleIncidencePrevalence, 
+  exportResultsRData = exportResultsRData, 
+  dropCohortTable = dropCohortTable
+)
+
+
 # Export results ----
 id <- paste0(study_prefix, "_", cohort_table, "_", cdmName(cdm), "_", gsub("-", "", Sys.Date()))
 output_folder <- basename(here(id))
@@ -391,7 +408,7 @@ overallSR <- overallSR |>
 # others
 for (result in names(output[!names(output) %in% summarised_results])) {
   if (!is.null(output[[result]])) {
-    write_csv(output[[result]], file = here(output_folder, paste0(result, ".csv")))
+    write_csv(output[[result]], file = here(output_folder, paste0(result, "_", id, ".csv")))
   }
 }
 # zip 
