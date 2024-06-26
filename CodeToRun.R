@@ -20,7 +20,7 @@ library(tidyr)
 library(CohortCharacteristics)
 library(visOmopResults)
 
-# database metadata and connection details -----
+# database metadata and connection details ----
 # The name/ acronym for the database
 db_name <- "CPRD"
 
@@ -35,7 +35,7 @@ cdm_schema <- "public_100k"
 write_schema <- "results"
 achilles_schema <- "results"
 
-# Table prefix and name-----
+# Table prefix and name ----
 # any tables created in the database during the analysis will start with this prefix
 # we provide the default here but you can change it
 # note, any existing tables in your write schema starting with this prefix may
@@ -67,11 +67,12 @@ runMatchedSampleLSC <- TRUE
 runIncidence <- TRUE                
 runPrevalence <- TRUE               
 sampleIncidencePrevalence <- 1000000 
+
 exportResultsRData <- TRUE 
 dropCohortTable <- TRUE
 
 # zip file containing the csv with recommended codes
 zipFileName <- "concept_recommended_20221006.zip"
 
-# Run the study ------
+# Run the study ----
 source(here("RunStudy.R"))
