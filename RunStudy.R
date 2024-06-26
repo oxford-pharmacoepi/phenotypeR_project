@@ -295,7 +295,7 @@ if (runMatchedSampleLSC) {
     ) |>
     uniteGroup(cols = c("cohort_name_reference", "cohort_name_comparator")) |>
     pivot_longer(cols = c("smd", "difference"), names_to = "estimate_name", values_to = "estimate_value") |>
-    mutate(estimate_type = "numeric", result_type = "large_scale_differences") |>
+    mutate(estimate_type = "numeric") |>
     select(-starts_with("percentage"), -starts_with("count")) |>
     omopgenerics::newSummarisedResult(settings = settings(lsc_matched) |> mutate(result_type = "summarised_large_scale_differences"))
   toc(log = TRUE)
@@ -403,7 +403,7 @@ overallSR <- overallSR |>
   omopgenerics::newSummarisedResult(
     settings = settings(overallSR) |> mutate(study_prefix = study_prefix, cohort_table = cohort_table)
   ) 
-overallSR <- overallSR |>
+overallSR |>
   omopgenerics::exportSummarisedResult(minCellCount = 5, fileName = paste0("sr_", id, ".csv"), path = output_folder)
 # others
 for (result in names(output[!names(output) %in% summarised_results])) {

@@ -57,7 +57,7 @@ cohort_table <- "phenotyper"
 # sampleIncidencePrevalence: Sample for Incidence Prevalence (NULL if all cdm)
 # dropCohortTable: If TRUE cohorts will be dropped afterwards.
 
-runGenerateCohort <- FALSE 
+runGenerateCohort <- TRUE 
 runCalculateOverlap <- TRUE 
 runCohortTiming <- TRUE
 runCountCodes <- TRUE                
@@ -68,7 +68,7 @@ runIncidence <- TRUE
 runPrevalence <- TRUE               
 sampleIncidencePrevalence <- 1000000 
 exportResultsRData <- TRUE 
-dropCohortTable <- FALSE
+dropCohortTable <- TRUE
 
 # zip file containing the csv with recommended codes
 zipFileName <- "concept_recommended_20221006.zip"
