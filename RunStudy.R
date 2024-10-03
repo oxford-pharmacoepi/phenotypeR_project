@@ -1,6 +1,6 @@
 # settings ------
 input <- list(
-  runGenerateCohort = T,              #### Generate cohort or use preloaded cohorts
+  runGenerateCohort = F,              #### Generate cohort or use preloaded cohorts
   runCalculateOverlap = T,            #### Calculate Overlap
   runCountCodes = T,                  #### run orphan codes and count codes
   runIndexEvents = T,                 #### run index events
@@ -23,7 +23,7 @@ tic(msg = "phenotypeR total time run: ")
 tic(msg = "Settings and loading of Phoebe")
 
 cohort_json_dir <- here("Cohorts/")
-cohorts_name <- "phenotyping_paper_"
+cohorts_name <- "cohort"
 
 # To export output 
 result_names <- c("cohort_definitions", "cohort_count", "code_counts", "cohort_overlap", 
@@ -60,6 +60,8 @@ cdm <- cdm_from_con(con = db,
                          achilles_schema = achilles_schema, 
                          cdm_name = db_name
                     )
+
+
 } else   {
   cdm <- cdm_from_con(con = db,
                       cdm_schema = c(schema = cdm_schema),
